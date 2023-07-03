@@ -1,0 +1,133 @@
+
+parameters:
+  max: 1
+  min: -.2
+  rest: -.1
+  decay: .1
+  alpha: .1
+  gamma: .1
+  estr:  .2
+  noise: 0.01
+
+aliases: [
+  &feature_codes [A,B,I,M,h,a],
+  # letters A,B; fingers index, middle; faces happy, angry
+  &weight 1.0,
+  &prepotent .5,
+  &hub_weight 1,
+  # hubwt_bu refers to bottom-up activation from
+  #. hub components, eg press, red, to the hub unit
+  &hub_weight_bu .5,
+  &between_pools 1,
+  &within_pool -1,
+  &within_effectors -1.5,
+  &within_intentions -1,
+  &within_features -1,
+  &within_map_add -1,
+]
+
+pools: [
+  {name: salience, shape: [5, 5], prefix: s},
+  {name: feature_maps, shape: [6, 5, 5], prefix: f,
+    basenames: [*feature_codes, [1,2,3,4,5], [1,2,3,4,5]]},
+  {name: features, shape: 6, basenames: *feature_codes, prefix: f},
+  # The different action intentions have different needs as far as a spatial action
+  #.  map goes. Although conceptually they are all part of one group, they are split
+  #.  up into separate pools here to make connections to different forms of spatial
+  #.  action easier (or in the case of button_press, no spatial action map is needed)
+  {name: intentions_spatial, shape: 3, unitnames: [touch, grasp, approach]},
+  {name: intentions_nonspatial, shape: 1, unitnames: button_press},
+  {name: intentions_antispatial, shape: 1, unitnames: avoid},
+  {name: action_maps, shape: [3, 5, 5], prefix: a,
+    basenames: [[t,g,a], [1,2,3,4,5],[1,2,3,4,5]]},
+  {name: avoid_map, shape: [5, 5], prefix: x},
+  {name: effectors, shape: 4, unitnames: [index, middle, LH, RH]},
+  {name: hub, shape: 16, prefix: h}
+]
+
+connections: [
+  {from: feature_maps, to: salience, weight: *between_pools, from_dims: [2,3], to_dims: [1,2]},
+  {from: feature_maps, to: features, weight: *between_pools, from_dims: 1, to_dims: 1},
+  {from: salience, to: action_maps, weight: *between_pools, from_dims: [1,2], to_dims: [2,3]},
+  {from: salience, to: avoid_map, weight: *between_pools, from_dims: [1,2], to_dims: [1,2]},
+  {from: intentions_spatial, to: action_maps, weight: *between_pools, from_dims: 1, to_dims: 1},
+  {from: intentions_antispatial, to: avoid_map, weight: *between_pools},
+
+  # # prepotent responses, visual stimuli activate action/attention
+  {from: fI, to: index,  weight: *prepotent, directives: oneway},
+  {from: fM, to: middle, weight: *prepotent, directives: oneway},
+  {from: fh, to: approach, weight: *prepotent, directives: oneway},
+  {from: fa, to: avoid, weight: *prepotent, directives: oneway},
+
+  # arbitrary SR associations made through hub for different tasks:
+  # Nonspatial SRC (Brass experiments)
+  {from:  h1, to: [fA, button_press, index],  weight: *hub_weight, directives: oneway},
+  {from:  h2, to: [fB, button_press, middle], weight: *hub_weight, directives: oneway},
+  {from:  h3, to: [fA, button_press, middle], weight: *hub_weight, directives: oneway},
+  {from:  h4, to: [fB, button_press, index],  weight: *hub_weight, directives: oneway},
+
+  {from:  h5, to: [fh, approach], weight: *hub_weight, directives: oneway},
+  {from:  h6, to: [fa, avoid], weight: *hub_weight, directives: oneway},
+  {from:  h7, to: [fh, avoid], weight: *hub_weight, directives: oneway},
+  {from:  h8, to: [fa, approach], weight: *hub_weight, directives: oneway},
+
+  # grasp
+  {from: h9, to: [fA, grasp], weight: *hub_weight, directives: oneway},
+  {from: h10, to: [fB, grasp], weight: *hub_weight, directives: oneway},
+  # nonspatial selection (target template A or B, identify target location)
+  {from: h11, to: [fA, touch, index], weight: *hub_weight, directives: oneway},
+  {from: h12, to: [fB, touch, index], weight: *hub_weight, directives: oneway},
+  # Approach-avoidance (Bamford & Ward experiments)
+  #. congruent
+  {from: h13, to: [fh, approach], weight: *hub_weight, directives: oneway},
+  {from: h14, to: [fa, avoid], weight: *hub_weight, directives: oneway},
+  #. incongruent
+  {from: h15, to: [fa, approach], weight: *hub_weight, directives: oneway},
+  {from: h16, to: [fh, avoid], weight: *hub_weight, directives: oneway},
+
+  # bottom-up hub activation, ie from inputs to hub
+  {to:  h1, from: [fA, button_press, index],  weight: *hub_weight_bu, directives: oneway},
+  {to:  h2, from: [fB, button_press, middle], weight: *hub_weight_bu, directives: oneway},
+  {to:  h3, from: [fA, button_press, middle], weight: *hub_weight_bu, directives: oneway},
+  {to:  h4, from: [fB, button_press, index],  weight: *hub_weight_bu, directives: oneway},
+  {to:  h5, from: [fh, approach], weight: *hub_weight_bu, directives: oneway},
+  {to:  h6, from: [fa, avoid], weight: *hub_weight_bu, directives: oneway},
+  {to:  h7, from: [fh, avoid], weight: *hub_weight_bu, directives: oneway},
+  {to:  h8, from: [fa, approach], weight: *hub_weight_bu, directives: oneway},
+
+  {to: h9, from: [fA, grasp], weight: *hub_weight_bu, directives: oneway},
+  {to: h10, from: [fB, grasp], weight: *hub_weight_bu, directives: oneway},
+  {to: h11, from: [fA, touch, index], weight: *hub_weight_bu, directives: oneway},
+  {to: h12, from: [fB, touch, index], weight: *hub_weight_bu, directives: oneway},
+  {to: h13, from: [fh, approach, index], weight: *hub_weight_bu, directives: oneway},
+  {to: h14, from: [fa, avoid], weight: *hub_weight_bu, directives: oneway},
+  {to: h15, from: [fa, approach, index], weight: *hub_weight_bu, directives: oneway},
+  {to: h16, from: [fh, avoid], weight: *hub_weight_bu, directives: oneway},
+  #
+  # within-pool inhibition
+  {from: features, to: features,   weight: *within_features, directives: others},
+  {from: salience, to: salience, weight: *within_pool, directives: others},
+  {from: feature_maps, to: feature_maps, weight: *within_pool, directives: others},
+  {from: action_maps, to: action_maps, weight: *within_pool, directives: others},
+  {from: avoid_map, to: avoid_map, weight: *within_pool, directives: others},
+  {from: action_maps, to: avoid_map, weight: *within_pool},
+  {from: intentions_spatial, to: intentions_spatial, weight: *within_intentions, directives: others},
+  {from: intentions_nonspatial, to: intentions_nonspatial, weight: *within_intentions, directives: others},
+  {from: intentions_antispatial, to: intentions_antispatial, weight: *within_intentions, directives: others},
+  {from: effectors, to: effectors, weight: *within_effectors, directives: others},
+  # Some "between-pool" inhibitin is needed for the different action units and maps
+  #  They are conceptually in the same pool, but split separately here because of their
+  #  different kinds of action map connections
+  {from: intentions_spatial, to: intentions_antispatial, weight: *within_intentions},
+  {from: intentions_spatial, to: intentions_nonspatial, weight: *within_intentions},
+  {from: intentions_nonspatial, to: intentions_antispatial, weight: *within_intentions},
+
+  #' Additional inhibition within spatial feature maps. For example, within the
+  #' A feature map, inhibition between units will be greater than between the
+  #' A and B maps. That is, even though both A and B are part of the "feature_maps"
+  #' pool, the inhibition is further organised within the pool.
+  #' NB The 'add' directive works in a slightly awkward way at this point,
+  #'  the specified weight is added twice when used within-pool
+  {from: feature_maps, to: feature_maps, from_dims: 1, to_dims: 1,
+    weight: *within_map_add, directives: [add, others, oneway]},
+]

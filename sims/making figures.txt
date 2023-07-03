@@ -1,0 +1,14 @@
+IMITATE.OBJECTS - E1_imi_selection_plot.R
+IMITATE.TIMECOURSE, IMITATE.RTS, and IMITATE.ROC - imitation_analysis.R run on the "out" dataframe saved in "out_basic....RData"
+IMITATE.SALIENCE - E2_imi_salience_plot.R
+
+----
+
+AA.TIMECOURSE, AA.RTS - aa_analysis.R on the "out" dataframe saved in aa_sim_....RData"
+AA.DISRUPT - E2_fig_aa.disrupt.R
+AA.SPECIFICITY - E2_fig_aa.specificity.R
+
+----
+
+SEARCH.RESULTS - E1_fig_search.results.R
+
