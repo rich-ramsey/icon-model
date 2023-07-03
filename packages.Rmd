@@ -1,0 +1,43 @@
+---
+title: "packages"
+author: "Rich"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This file is an attempt to efficiently manage R packages using renv. It is technically unnecessary, as one could just install and load packages as necessary and one normally does and then use the R scripts that are contained in these folders. However, this file is just an attempt to manage the record of package versions used. It also deviates a little from the R scripts contained because in what follows we use tidyverse and ggplot to wrangle data and plot data in some instances. In contrast, some of the R scripts plot in base R code. We leave it up to the user to choose how they would like to proceed. Option 1) Use the R scripts and base R code and load packages as you need them. Option 2) use markdown (.Rmd) files and tidyverse plus ggplot2 for wrangling and plotting and then load everything at the start in one go. Note - you could also use Optino 2) and load packages as you go, I just find it easier to do it in one go and update the renv lockfile once, if you need to. 
+
+## load the libraries that we will be using ## 
+
+## install packages ##
+
+This only needs doing once, unless you want to update or add new packages
+
+```{r install-pkg}
+# install.packages(c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice"))
+# devtools::install_github("rob-ward-psych/iac")
+```
+
+## snapshot ##
+
+```{r snapshot-renv}
+# take a snapshot and update the lock.file
+# renv::snapshot() # this is only necessary when new packages or installed or packages are updated.
+```
+
+## load packages ##
+
+```{r load-pkg}
+pkg <- c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "iac")
+
+lapply(pkg, library, character.only = TRUE)
+```
+
+
+
