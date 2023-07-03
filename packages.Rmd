@@ -20,7 +20,7 @@ This file is an attempt to efficiently manage R packages using renv. It is techn
 This only needs doing once, unless you want to update or add new packages
 
 ```{r install-pkg}
-# install.packages(c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice"))
+# install.packages(c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "directlabels", "RColorBrewer", "broom"))
 # devtools::install_github("rob-ward-psych/iac")
 ```
 
@@ -34,7 +34,7 @@ This only needs doing once, unless you want to update or add new packages
 ## load packages ##
 
 ```{r load-pkg}
-pkg <- c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "iac")
+pkg <- c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "directlabels", "RColorBrewer", "broom", "iac")
 
 lapply(pkg, library, character.only = TRUE)
 ```
