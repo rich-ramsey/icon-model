@@ -77,7 +77,7 @@ p1 <- ggplot(timecourse, aes(x = cycle, y = value, color = parameter)) +
   facet_wrap(~condition)
 p1
 
-ggsave ("figures/timecourse.jpeg")
+ggsave ("sims/imitation/figures/timecourse.jpeg")
 ```
 
 
