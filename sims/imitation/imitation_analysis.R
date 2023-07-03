@@ -1,4 +1,4 @@
-source("sims/RTs.R")
+source("./sims/RTs.R")
 # The output from each simulation is stored in a variable called "out"
 # This variable has columns for the activations of every unit on every cycle
 # of every simulation. The colnames will be:
