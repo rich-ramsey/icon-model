@@ -25,15 +25,23 @@ see packages.Rmd in the /5x5/ folder
 
 ## set the animacy bias ##
 
+comment out as appropriate, depending on the type of imitation simulation that 
+you want to run.
+
 ```{r}
-animacy_bias = .1
+# animacy_bias = .1 # basic / standard parameters used
+# animacy_bias = .2 # Relative salience of the distractor is INCREASED
+animacy_bias = .05 # Relative salience of the distractor is DECREASED
 ```
 
 ## save out a .RData file ##
 
 ```{r}
-save_filename = sprintf("sims/imitation/out_imi_basic_%s-%s.RData", 
-                       Sys.Date(), format(Sys.time(),"%H%M"))
+# save_filename = sprintf("sims/imitation/out_imi_basic_%s-%s.RData",
+#                        Sys.Date(), format(Sys.time(),"%H%M"))
+
+save_filename = sprintf("sims/imitation/out_animacy(%02d)_%s-%s.RData", 
+                       100*animacy_bias, Sys.Date(), format(Sys.time(),"%H%M"))
 ```
 
 ## run the simulation ##
@@ -44,25 +52,58 @@ network and simulation results are accessible in the global environment for
 ease of investigation.
 
 ```{r}
+plan(multicore)
 source("sims/imitation/imitation_task.R")
 ```
 
 ## write out the files of interest as .csv files ##
 
-This is just so plots can be made in a tidyverse style
+This is just so plots can be made in a tidyverse style.
+
+comment out, as appropriate.
 
 ```{r}
-write_csv(out, "data/out_imi_basic.csv")
+# write_csv(out, "sims/imitation/data/out_imi_basic.csv")
+
+# write_csv(out, "sims/imitation/data/out_imi_hi.csv")
+
+write_csv(out, "sims/imitation/data/out_imi_lo.csv")
 ```
 
 ## a quick overview of the results ##
 
 ```{r}
+plan(multicore)
 source("sims/imitation/imitation_analysis.R")
 ```
 
 ## save out rt data ##
 
+comment out, as appropriate
+
+basic
+
 ```{r}
-write_csv(rt_data, "data/rtdata_imi_basic.csv")
+# write_csv(rt_data[[1]], "sims/imitation/data/rts_imi_basic.csv")
+# write_csv(rt_data[[2]], "sims/imitation/data/roc_imi_basic.csv")
+```
+
+hi
+
+```{r}
+# write_csv(rt_data[[1]], "sims/imitation/data/rts_imi_hi.csv")
+# write_csv(rt_data[[2]], "sims/imitation/data/roc_imi_hi.csv")
+```
+
+lo
+
+```{r}
+write_csv(rt_data[[1]], "sims/imitation/data/rts_imi_lo.csv")
+write_csv(rt_data[[2]], "sims/imitation/data/roc_imi_lo.csv")
+```
+
+## print session info ##
+
+```{r}
+sessionInfo()
 ```
