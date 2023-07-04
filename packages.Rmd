@@ -20,7 +20,7 @@ This file is an attempt to efficiently manage R packages using renv. It is techn
 This only needs doing once, unless you want to update or add new packages
 
 ```{r install-pkg}
-# install.packages(c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "directlabels", "RColorBrewer", "broom"))
+# install.packages(c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "directlabels", "RColorBrewer", "broom", "future")) # parallel comes pre-installed, hence it only needs loading in the next chunk and not installing.
 # devtools::install_github("rob-ward-psych/iac")
 ```
 
@@ -34,10 +34,22 @@ This only needs doing once, unless you want to update or add new packages
 ## load packages ##
 
 ```{r load-pkg}
-pkg <- c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "directlabels", "RColorBrewer", "broom", "iac")
+pkg <- c("here", "knitr", "tidyverse", "patchwork", "devtools", "lattice", "directlabels", "RColorBrewer", "broom", "future", "parallel", "iac")
 
 lapply(pkg, library, character.only = TRUE)
 ```
 
+## settings ##
 
+This just sets up multicore processing.
+
+```{r set-options}
+options(mc.cores = parallel::detectCores(),
+        future.fork.enable = TRUE,
+        future.rng.onMisuse = "ignore") ## automatically set in RStudio
+
+supportsMulticore()
+
+detectCores()
+```
 
