@@ -19,43 +19,84 @@ Note - some of these plots and analyses are the identical or similar to what the
 
 see packages.Rmd in the /5x5/ folder
 
-## Read in the data files ##
+## section 1 ##
 
-read in only data file or all 3 data files depending on how much wrangling needs doing. 
+## take a look at simulated imitation data from the basic model ##
+
+## read in the data files ##
+
+read in relevant data files depending on how much wrangling needs doing. 
 
 ```{r}
 out_imi_basic <- read_csv("sims/imitation/data/out_imi_basic.csv") 
+# load("sims/imitate/.RData") # test RW's prior data
 head(out_imi_basic)
-# rts <- read_csv("data/rts.csv")
-# timecourse <- read_csv("data/timecourse.csv")
+rts_imi_basic <- read_csv("sims/imitation/data/rts_imi_basic.csv")
+head(rts_imi_basic)
+roc_imi_basic <- read_csv("sims/imitation/data/roc_imi_basic.csv")
+head(roc_imi_basic)
 ```
+
+## wrangle rt data ##
+
+```{r}
+# make factors
+rts <- rts_imi_basic %>%
+  mutate(task = factor(task, levels = c("congr", "incon")))
+head(rts)
+str(rts)
+
+# summarise accuracy data
+acc_summary <- rts %>%
+  group_by(task) %>%
+  summarise(mean_acc = mean(acc), sd_acc=sd(acc))
+head(acc_summary)
+  
+# summarise cycle data
+rts_summary <- rts %>%
+  group_by(task, acc) %>% 
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
+head(rts_summary)
+
+# grand mean rt - useful for speed-accuracy plot
+rts_mean <- rts %>%
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n))
+head(rts_mean)
+
+# grand mean accuracy - useful for speed-accuracy plot
+rts_acc <- rts %>%
+  summarise(mean_acc = mean(acc), sd=sd(acc), n=n(), sem=sd/sqrt(n))
+head(rts_acc)
+```
+
+## look at the activation timecourse across parameters and conditions ##
 
 ## select relevant variables to plot ##
 
 ```{r}
-out_plot <- out_imi_basic %>% 
+activation <- out_imi_basic %>% 
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
          "Dfeat_array" = fI, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
                names_to = c("condition", "parameter"),
                names_sep = 1)  # separate columns based on the first letter
-head(out_plot)
+head(activation)
 ```
 
 ## make factors and rename ##
 
 ```{r}
-out_plot <- out_plot %>%
+activation <- activation %>%
   mutate(condition = factor(condition, levels = c("T", "D")),
          parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
   mutate(condition = fct_recode(condition, target = "T", distractor = "D"))
-head(out_plot)
+head(activation)
 ```
 
 ## summarise ##
 
 ```{r}
-timecourse <- out_plot %>% 
+timecourse <- activation %>% 
   group_by(cycle, condition, parameter) %>% 
   summarise(value = mean(value))
 head(timecourse)
@@ -66,7 +107,7 @@ head(timecourse)
 We are plotting the timecourse for the basic imitation task (E1), looking at the average for all trials. We include relevant columns to show an object-oriented selection e.g., target vs distractor.
 
 ```{r}
-p1 <- ggplot(timecourse, aes(x = cycle, y = value, color = parameter)) + 
+p1.1 <- ggplot(timecourse, aes(x = cycle, y = value, color = parameter)) + 
   geom_line() +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -75,9 +116,980 @@ p1 <- ggplot(timecourse, aes(x = cycle, y = value, color = parameter)) +
         legend.position="right") +
   ylab("activation") +
   facet_wrap(~condition)
-p1
+p1.1
 
 ggsave ("sims/imitation/figures/timecourse.jpeg")
 ```
 
+and now re-plotted with overlap rather than facet_wrap
 
+```{r}
+# legend within the figure
+p1.2 <- ggplot(timecourse, aes(x = cycle, y = value, colour = parameter)) + 
+  geom_line(aes(linetype=condition)) +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold"))  
+p1.2
+
+ggsave ("sims/imitation/figures/timecourse2.jpeg")
+```
+
+and now re-plotted with a shorter x-axis
+
+```{r}
+# legend within the figure
+p1.3 <- ggplot(timecourse, aes(x = cycle, y = value, colour = parameter)) + 
+  geom_line(aes(linetype=condition)) +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold")) +
+  xlim(0, 100)
+p1.3
+
+ggsave ("sims/imitation/figures/timecourse2b.jpeg")
+```
+
+Note to Rob - data for the distractor feat_array and identity parameters are identical for timecourse activation plots. Does this make sense?
+
+
+## speed-accuracy curve ##
+
+The response operating characteristic (ROC) curve. Each point on the curve represents a response threshold criterion and the resulting mean RT and mean accuracy. 
+
+```{r}
+roc <- roc_imi_basic
+head(roc)
+```
+
+plot RT against accuracy
+
+```{r}
+p2.1 <- ggplot(roc, aes(x = rt, y = acc)) +
+  geom_line() + 
+  geom_point(aes(x=rts_mean$mean_rt, y=rts_acc$mean_acc), shape=1, size = 3) +
+  geom_vline(aes(xintercept=rts_mean$mean_rt), colour="blue") +
+  geom_text(x=75, y=0.25, label="mean RT=51", colour = "blue", fontface=2) +
+  geom_hline(aes(yintercept=rts_acc$mean_acc), colour="red") +
+  geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
+  labs(title = "speed vs. accuracy curve",
+       x = "RT (cycles)", y = "Accuracy (%)") +
+  theme_bw() +
+  xlim(0,200)
+p2.1
+
+ggsave ("sims/imitation/figures/roc_rt.jpeg")
+```
+
+plot the compatibility effect (CE) against accuracy
+
+```{r}
+p2.2 <- ggplot(roc, aes(x = taskdiff, y = acc)) +
+  geom_point() + 
+  geom_point(shape=1, size = 3) +
+  geom_vline(aes(xintercept=subset(roc, acc >= 0.98)$taskdiff[1]), colour="blue") +
+  geom_hline(aes(yintercept=0.98), colour="red") +
+  labs(title = "congruency effect vs. accuracy curve",
+       x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
+  theme_bw()
+p2.2
+
+ggsave ("sims/imitation/figures/roc_ce.jpeg")
+```
+
+Note to Rob - both of these ROC plots are different to the plots in the main text (IMITATE.ROC). They are different if I plot using your code and also if I wrangle and plot using ggplot/tidyverse. Which is right? The figure in the main text or the plots here?
+
+combined ROC plots
+
+```{r}
+p2.3 <- p2.1 | p2.2
+p2.3
+
+ggsave ("sims/imitation/figures/roc.jpeg")
+```
+
+## combine activation and ROC plots ##
+
+This might be more efficient in a paper. 
+
+```{r}
+p2.4 <- p1.3 | p2.1 / p2.2
+p2.4 + plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 16))
+# p2.4
+
+ggsave ("sims/imitation/figures/timecourse_roc.jpeg")
+```
+
+
+## rt distrubition plots ##
+
+density
+
+```{r}
+p3.1 <- ggplot(rts, aes(x = cycle, colour = task)) +
+  geom_density() +
+  theme_bw() +
+  scale_colour_brewer(palette = "Dark2")
+p3.1
+```
+
+boxplot
+
+```{r}
+# with acc=1
+p3.2 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+  geom_boxplot() +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2")
+p3.2
+```
+
+violin plot
+
+```{r}
+# with acc=1
+p3.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
+  geom_errorbar(data=subset(rts_summary, acc==1), aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  geom_line(data=subset(rts_summary, acc==1), aes(y=mean_rt, group=1)) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") 
+p3.3
+
+ggsave ("sims/imitation/figures/rt_cycles.jpeg")
+
+# split by acc (if necessary)
+p3.3b <- ggplot(rts, aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=rts_summary, aes(y=mean_rt), size =3) +
+  geom_errorbar(data=rts_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position = "bottom") +
+  facet_wrap(~acc) # # no need to facet_wrap when acc==1 on every sim
+p3.3b
+
+```
+
+combined plots
+
+```{r}
+p3.4 <- p3.1 / p3.2 / p3.3
+p3.4
+
+ggsave ("sims/imitation/figures/rt_dist.jpeg")
+```
+
+## run a t-test on cycles ##
+
+I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
+
+```{r}
+t_test_cycle <- t.test(subset(rts, task=='incon' & acc == 1)$cycle, 
+       subset(rts, task == 'congr' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle
+
+# tidy the output with broom
+tidy_t_cycle <- tidy(t_test_cycle)
+tidy_t_cycle
+```
+
+## write out the files of interest ##
+
+```{r}
+write_csv(roc, "sims/imitation/data/roc.csv")
+write_csv(rts, "sims/imitation/data/rts.csv")
+write_csv(rts_summary, "sims/imitation/data/rts_summary.csv")
+write_csv(tidy_t_cycle, "sims/imitation/data/tidy_t_cycle.csv")
+write_csv(timecourse, "sims/imitation/data/timecourse.csv")
+```
+
+
+
+## section 2 ##
+
+## take a look at simulated imitation data when the animacy bias is set higher ##
+
+## read in the data files ##
+
+read in relevant data files depending on how much wrangling needs doing. 
+
+```{r}
+out_imi_hi <- read_csv("sims/imitation/data/out_imi_hi.csv") 
+# load("sims/imitate/.RData") # test RW's prior data
+head(out_imi_hi)
+rts_imi_hi <- read_csv("sims/imitation/data/rts_imi_hi.csv")
+head(rts_imi_hi)
+roc_imi_hi <- read_csv("sims/imitation/data/roc_imi_hi.csv")
+head(roc_imi_hi)
+```
+
+## wrangle rt data ##
+
+```{r}
+# make factors
+rts_hi <- rts_imi_hi %>%
+  mutate(task = factor(task, levels = c("congr", "incon")))
+head(rts_hi)
+str(rts_hi)
+
+# summarise accuracy data
+acc_summary_hi <- rts_hi %>%
+  group_by(task) %>%
+  summarise(mean_acc = mean(acc), sd_acc=sd(acc))
+head(acc_summary_hi)
+  
+# summarise cycle data
+rts_summary_hi <- rts_hi %>%
+  group_by(task, acc) %>% 
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
+head(rts_summary_hi)
+
+# grand mean rt - useful for speed-accuracy plot
+rts_mean_hi <- rts_hi %>%
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n))
+head(rts_mean_hi)
+
+# grand mean accuracy - useful for speed-accuracy plot
+rts_acc_hi <- rts_hi %>%
+  summarise(mean_acc = mean(acc), sd=sd(acc), n=n(), sem=sd/sqrt(n))
+head(rts_acc_hi)
+```
+
+## look at the activation timecourse across parameters and conditions ##
+
+## select relevant variables to plot ##
+
+```{r}
+activation_hi <- out_imi_hi %>% 
+  select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
+         "Dfeat_array" = fI, "Dsalience" = s32, "Didentity" = fI) %>% 
+  pivot_longer(-cycle,
+               names_to = c("condition", "parameter"),
+               names_sep = 1)  # separate columns based on the first letter
+head(activation_hi)
+```
+
+## make factors and rename ##
+
+```{r}
+activation_hi <- activation_hi %>%
+  mutate(condition = factor(condition, levels = c("T", "D")),
+         parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
+  mutate(condition = fct_recode(condition, target = "T", distractor = "D"))
+head(activation_hi)
+```
+
+## summarise ##
+
+```{r}
+timecourse_hi <- activation_hi %>% 
+  group_by(cycle, condition, parameter) %>% 
+  summarise(value = mean(value))
+head(timecourse_hi)
+```
+
+## timecourse plot ##
+
+We are plotting the timecourse for the basic imitation task (E1), looking at the average for all trials. We include relevant columns to show an object-oriented selection e.g., target vs distractor.
+
+```{r}
+p4.1 <- ggplot(timecourse_hi, aes(x = cycle, y = value, color = parameter)) + 
+  geom_line() +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position="right") +
+  ylab("activation") +
+  facet_wrap(~condition)
+p4.1
+
+ggsave ("sims/imitation/figures/timecourse_hi.jpeg")
+```
+
+and now re-plotted with overlap rather than facet_wrap
+
+```{r}
+# legend within the figure
+p4.2 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = parameter)) + 
+  geom_line(aes(linetype=condition)) +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold"))  
+p4.2
+
+ggsave ("sims/imitation/figures/timecourse2_hi.jpeg")
+```
+
+and now re-plotted with a shorter x-axis
+
+```{r}
+# legend within the figure
+p4.3 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = parameter)) + 
+  geom_line(aes(linetype=condition)) +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold")) +
+  xlim(0, 100)
+p4.3
+
+ggsave ("sims/imitation/figures/timecourse2b_hi.jpeg")
+```
+
+## speed-accuracy curve ##
+
+The response operating characteristic (ROC) curve. Each point on the curve represents a response threshold criterion and the resulting mean RT and mean accuracy. 
+
+```{r}
+roc_hi <- roc_imi_hi
+head(roc_hi)
+```
+
+plot RT against accuracy
+
+```{r}
+p5.1 <- ggplot(roc_hi, aes(x = rt, y = acc)) +
+  geom_line() + 
+  geom_point(aes(x=rts_mean_hi$mean_rt, y=rts_acc_hi$mean_acc), shape=1, size = 3) +
+  geom_vline(aes(xintercept=rts_mean_hi$mean_rt), colour="blue") +
+  geom_text(x=75, y=0.25, label="mean RT=72", colour = "blue", fontface=2) +
+  geom_hline(aes(yintercept=rts_acc_hi$mean_acc), colour="red") +
+  geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
+  labs(title = "speed vs. accuracy curve",
+       x = "RT (cycles)", y = "Accuracy (%)") +
+  theme_bw() +
+  xlim(0,200)
+p5.1
+
+ggsave ("sims/imitation/figures/roc_rt_hi.jpeg")
+```
+
+plot the compatibility effect (CE) against accuracy
+
+```{r}
+p5.2 <- ggplot(roc_hi, aes(x = taskdiff, y = acc)) +
+  geom_point() + 
+  geom_point(shape=1, size = 3) +
+  geom_vline(aes(xintercept=subset(roc_hi, acc >= 0.98)$taskdiff[1]), colour="blue") +
+  geom_hline(aes(yintercept=0.98), colour="red") +
+  labs(title = "congruency effect vs. accuracy curve",
+       x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
+  theme_bw()
+p5.2
+
+ggsave ("sims/imitation/figures/roc_ce_hi.jpeg")
+```
+
+combined ROC plots
+
+```{r}
+p5.3 <- p5.1 | p5.2
+p5.3
+
+ggsave ("sims/imitation/figures/roc_hi.jpeg")
+```
+
+
+## rt distrubition plots ##
+
+density
+
+```{r}
+p6.1 <- ggplot(rts_hi, aes(x = cycle, colour = task)) +
+  geom_density() +
+  theme_bw() +
+  scale_colour_brewer(palette = "Dark2")
+p6.1
+```
+
+boxplot
+
+```{r}
+# with acc=1
+p6.2 <- ggplot(subset(rts_hi, acc==1), aes(x = task, y = cycle, fill = task)) +
+  geom_boxplot() +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2")
+p6.2
+```
+
+violin plot
+
+```{r}
+# with acc=1
+p6.3 <- ggplot(subset(rts_hi, acc==1), aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=subset(rts_summary_hi, acc==1), aes(y=mean_rt), size =3) +
+  geom_errorbar(data=subset(rts_summary_hi, acc==1), aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  geom_line(data=subset(rts_summary_hi, acc==1), aes(y=mean_rt, group=1)) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") 
+p6.3
+
+ggsave ("sims/imitation/figures/rt_cycles_hi.jpeg")
+
+# split by acc (if necessary)
+p6.3b <- ggplot(rts_hi, aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=rts_summary_hi, aes(y=mean_rt), size =3) +
+  geom_errorbar(data=rts_summary_hi, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position = "bottom") +
+  facet_wrap(~acc) # # no need to facet_wrap when acc==1 on every sim
+p6.3b
+
+```
+
+combined plots
+
+```{r}
+p6.4 <- p6.1 / p6.2 / p6.3
+p6.4
+
+ggsave ("sims/imitation/figures/rt_dist_hi.jpeg")
+```
+
+## run a t-test on cycles ##
+
+I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
+
+```{r}
+t_test_cycle_hi <- t.test(subset(rts_hi, task=='incon' & acc == 1)$cycle, 
+       subset(rts_hi, task == 'congr' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle_hi
+
+# tidy the output with broom
+tidy_t_cycle_hi <- tidy(t_test_cycle_hi)
+tidy_t_cycle_hi
+```
+
+## write out the files of interest ##
+
+```{r}
+write_csv(roc_hi, "sims/imitation/data/roc_hi.csv")
+write_csv(rts_hi, "sims/imitation/data/rts_hi.csv")
+write_csv(rts_summary_hi, "sims/imitation/data/rts_summary_hi.csv")
+write_csv(tidy_t_cycle_hi, "sims/imitation/data/tidy_t_cycle_hi.csv")
+write_csv(timecourse_hi, "sims/imitation/data/timecourse_hi.csv")
+```
+
+
+## section 3 ##
+
+## take a look at simulated imitation data when the animacy bias is set lower ##
+
+## read in the data files ##
+
+read in relevant data files depending on how much wrangling needs doing. 
+
+```{r}
+out_imi_lo <- read_csv("sims/imitation/data/out_imi_lo.csv") 
+# load("sims/imitate/.RData") # test RW's prior data
+head(out_imi_lo)
+rts_imi_lo <- read_csv("sims/imitation/data/rts_imi_lo.csv")
+head(rts_imi_lo)
+roc_imi_lo <- read_csv("sims/imitation/data/roc_imi_lo.csv")
+head(roc_imi_lo)
+```
+
+## wrangle rt data ##
+
+```{r}
+# make factors
+rts_lo <- rts_imi_lo %>%
+  mutate(task = factor(task, levels = c("congr", "incon")))
+head(rts_lo)
+str(rts_lo)
+
+# summarise accuracy data
+acc_summary_lo <- rts_lo %>%
+  group_by(task) %>%
+  summarise(mean_acc = mean(acc), sd_acc=sd(acc))
+head(acc_summary_lo)
+  
+# summarise cycle data
+rts_summary_lo <- rts_lo %>%
+  group_by(task, acc) %>% 
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
+head(rts_summary_lo)
+
+# grand mean rt - useful for speed-accuracy plot
+rts_mean_lo <- rts_lo %>%
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n))
+head(rts_mean_lo)
+
+# grand mean accuracy - useful for speed-accuracy plot
+rts_acc_lo <- rts_lo %>%
+  summarise(mean_acc = mean(acc), sd=sd(acc), n=n(), sem=sd/sqrt(n))
+head(rts_acc_lo)
+```
+
+## look at the activation timecourse across parameters and conditions ##
+
+## select relevant variables to plot ##
+
+```{r}
+activation_lo <- out_imi_lo %>% 
+  select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
+         "Dfeat_array" = fI, "Dsalience" = s32, "Didentity" = fI) %>% 
+  pivot_longer(-cycle,
+               names_to = c("condition", "parameter"),
+               names_sep = 1)  # separate columns based on the first letter
+head(activation_lo)
+```
+
+## make factors and rename ##
+
+```{r}
+activation_lo <- activation_lo %>%
+  mutate(condition = factor(condition, levels = c("T", "D")),
+         parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
+  mutate(condition = fct_recode(condition, target = "T", distractor = "D"))
+head(activation_lo)
+```
+
+## summarise ##
+
+```{r}
+timecourse_lo <- activation_lo %>% 
+  group_by(cycle, condition, parameter) %>% 
+  summarise(value = mean(value))
+head(timecourse_lo)
+```
+
+## timecourse plot ##
+
+We are plotting the timecourse for the basic imitation task (E1), looking at the average for all trials. We include relevant columns to show an object-oriented selection e.g., target vs distractor.
+
+```{r}
+p7.1 <- ggplot(timecourse_lo, aes(x = cycle, y = value, color = parameter)) + 
+  geom_line() +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position="right") +
+  ylab("activation") +
+  facet_wrap(~condition)
+p7.1
+
+ggsave ("sims/imitation/figures/timecourse_lo.jpeg")
+```
+
+and now re-plotted with overlap rather than facet_wrap
+
+```{r}
+# legend within the figure
+p7.2 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = parameter)) + 
+  geom_line(aes(linetype=condition)) +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold"))  
+p7.2
+
+ggsave ("sims/imitation/figures/timecourse2_lo.jpeg")
+```
+
+and now re-plotted with a shorter x-axis
+
+```{r}
+# legend within the figure
+p7.3 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = parameter)) + 
+  geom_line(aes(linetype=condition)) +
+  ggtitle('Mean response activation') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold")) +
+  xlim(0, 100)
+p7.3
+
+ggsave ("sims/imitation/figures/timecourse2b_lo.jpeg")
+```
+
+## speed-accuracy curve ##
+
+The response operating characteristic (ROC) curve. Each point on the curve represents a response threshold criterion and the resulting mean RT and mean accuracy. 
+
+```{r}
+roc_lo <- roc_imi_lo
+head(roc_lo)
+```
+
+plot RT against accuracy
+
+```{r}
+p8.1 <- ggplot(roc_lo, aes(x = rt, y = acc)) +
+  geom_line() + 
+  geom_point(aes(x=rts_mean_lo$mean_rt, y=rts_acc_lo$mean_acc), shape=1, size = 3) +
+  geom_vline(aes(xintercept=rts_mean_lo$mean_rt), colour="blue") +
+  geom_text(x=75, y=0.25, label="mean RT=42.1", colour = "blue", fontface=2) +
+  geom_hline(aes(yintercept=rts_acc_lo$mean_acc), colour="red") +
+  geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
+  labs(title = "speed vs. accuracy curve",
+       x = "RT (cycles)", y = "Accuracy (%)") +
+  theme_bw() +
+  xlim(0,200)
+p8.1
+
+ggsave ("sims/imitation/figures/roc_rt_lo.jpeg")
+```
+
+plot the compatibility effect (CE) against accuracy
+
+```{r}
+p8.2 <- ggplot(roc_lo, aes(x = taskdiff, y = acc)) +
+  geom_point() + 
+  geom_point(shape=1, size = 3) +
+  geom_vline(aes(xintercept=subset(roc_lo, acc >= 0.98)$taskdiff[1]), colour="blue") +
+  geom_hline(aes(yintercept=0.98), colour="red") +
+  labs(title = "congruency effect vs. accuracy curve",
+       x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
+  theme_bw()
+p8.2
+
+ggsave ("sims/imitation/figures/roc_ce_lo.jpeg")
+```
+
+combined ROC plots
+
+```{r}
+p8.3 <- p8.1 | p8.2
+p8.3
+
+ggsave ("sims/imitation/figures/roc_lo.jpeg")
+```
+
+
+## rt distrubition plots ##
+
+density
+
+```{r}
+p9.1 <- ggplot(rts_lo, aes(x = cycle, colour = task)) +
+  geom_density() +
+  theme_bw() +
+  scale_colour_brewer(palette = "Dark2")
+p9.1
+```
+
+boxplot
+
+```{r}
+# with acc=1
+p9.2 <- ggplot(subset(rts_lo, acc==1), aes(x = task, y = cycle, fill = task)) +
+  geom_boxplot() +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2")
+p9.2
+```
+
+violin plot
+
+```{r}
+# with acc=1
+p9.3 <- ggplot(subset(rts_lo, acc==1), aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=subset(rts_summary_lo, acc==1), aes(y=mean_rt), size =3) +
+  geom_errorbar(data=subset(rts_summary_lo, acc==1), aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  geom_line(data=subset(rts_summary_lo, acc==1), aes(y=mean_rt, group=1)) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") 
+p9.3
+
+ggsave ("sims/imitation/figures/rt_cycles_lo.jpeg")
+
+# split by acc (if necessary)
+p9.3b <- ggplot(rts_lo, aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=rts_summary_lo, aes(y=mean_rt), size =3) +
+  geom_errorbar(data=rts_summary_lo, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position = "bottom") +
+  facet_wrap(~acc) # # no need to facet_wrap when acc==1 on every sim
+p9.3b
+
+```
+
+combined plots
+
+```{r}
+p9.4 <- p9.1 / p9.2 / p9.3
+p9.4
+
+ggsave ("sims/imitation/figures/rt_dist_lo.jpeg")
+```
+
+## run a t-test on cycles ##
+
+I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
+
+```{r}
+t_test_cycle_lo <- t.test(subset(rts_lo, task=='incon' & acc == 1)$cycle, 
+       subset(rts_lo, task == 'congr' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle_lo
+
+# tidy the output with broom
+tidy_t_cycle_lo <- tidy(t_test_cycle_lo)
+tidy_t_cycle_lo
+```
+
+## write out the files of interest ##
+
+```{r}
+write_csv(roc_lo, "sims/imitation/data/roc_lo.csv")
+write_csv(rts_lo, "sims/imitation/data/rts_lo.csv")
+write_csv(rts_summary_lo, "sims/imitation/data/rts_summary_lo.csv")
+write_csv(tidy_t_cycle_lo, "sims/imitation/data/tidy_t_cycle_lo.csv")
+write_csv(timecourse_lo, "sims/imitation/data/timecourse_lo.csv")
+```
+
+
+
+
+
+## section 4 ##
+
+## plot data from different sims together ##
+
+this is just for ease of comparison
+
+# activation timecourse data #
+
+load in the data and add a bias variable
+
+```{r}
+timecourse <- read_csv("sims/imitation/data/timecourse.csv") %>% 
+  mutate(bias = "baseline")
+head(timecourse)
+
+timecourse_hi <- read_csv("sims/imitation/data/timecourse_hi.csv") %>% 
+  mutate(bias = "high")
+head(timecourse_hi)
+
+timecourse_lo <- read_csv("sims/imitation/data/timecourse_lo.csv") %>% 
+  mutate(bias = "low")
+head(timecourse_lo)
+```
+
+join them together and create a factor 
+
+```{r}
+timecourse_all <- rbind(timecourse, timecourse_hi, timecourse_lo) %>%
+  select(cycle, condition, parameter, bias, value) %>% 
+  mutate(condition = factor(condition, levels = c("target", "distractor")),
+         parameter = factor(parameter, levels = c("feat_array", "salience", "identity")),
+         bias = factor(bias, levels = c("baseline", "high", "low")))
+head(timecourse_all)
+```
+
+plot
+
+```{r}
+p10.1 <- ggplot(timecourse_all, aes(x = cycle, y = value, colour = parameter)) + 
+  geom_line(aes(linetype=condition)) +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.55, 0.60), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold"))+
+  ylab("activation") +
+  facet_wrap(~bias)
+p10.1
+
+ggsave ("sims/imitation/figures/timecourse_all.jpeg") 
+```
+
+
+# rt (cycles) #
+
+load the data and add a bias variable
+
+```{r}
+rts <- read_csv("sims/imitation/data/rts.csv") %>% 
+  mutate(bias = "baseline")
+head(rts)
+
+rts_hi <- read_csv("sims/imitation/data/rts_hi.csv") %>% 
+  mutate(bias = "high")
+head(rts_hi)
+
+rts_lo <- read_csv("sims/imitation/data/rts_lo.csv") %>% 
+  mutate(bias = "low")
+head(rts_lo)
+```
+
+join them together and create a factor
+
+```{r}
+rts_all <- rbind(rts, rts_hi, rts_lo) %>%
+  select(simno, task, bias, acc, cycle) %>% 
+  mutate(task = factor(task, levels = c("congr", "incon")),
+         bias = factor(bias, levels = c("baseline", "high", "low"))) %>% 
+  filter(acc==1)
+head(rts_all)
+```
+
+create summary data
+
+```{r}
+rts_all_summary <- rts_all %>%
+  group_by(task, bias) %>% 
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
+rts_all_summary
+```
+
+plot
+
+```{r}
+p10.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
+  geom_errorbar(data=rts_all_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") +
+  scale_y_continuous(limits = c(0, 150)) +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position="none", legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold")) +
+  ylab("RT (cycles)") +
+  facet_wrap(~bias)
+p10.2
+
+ggsave ("sims/imitation/figures/rt_cycles_all.jpeg")
+```
+
+now wrangle and plot the difference score or congruency effect
+
+first wrangle the diff score or ce
+
+```{r}
+rts_diff <- rts_all %>% 
+  pivot_wider(names_from = "task",
+              values_from = "cycle") %>% 
+  mutate(ce = incon - congr)
+rts_diff
+```
+
+create a summary
+
+```{r}
+rts_diff_summary <- rts_diff %>%
+  group_by(bias) %>% 
+  summarise(mean_ce=mean(ce, na.rm=TRUE), sd=sd(ce, na.rm=TRUE), n=n(), sem=sd/sqrt(n))
+rts_diff_summary  
+```
+
+then plot 
+
+(with bias on the x-axis)
+
+```{r}
+p10.3 <- ggplot(rts_diff, aes(x = bias, y = ce)) +
+  geom_violin() +
+  geom_jitter(width=0.1, alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=rts_diff_summary, aes(y=mean_ce), size =3) +
+  geom_errorbar(data=rts_diff_summary, aes(y = mean_ce, ymin=mean_ce-sem, ymax=mean_ce+sem), width=.2) +
+  theme_bw() +
+  # scale_fill_brewer(palette = "Dark2") +
+  # scale_y_continuous(limits = c(-10, 80)) +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position="none", legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold")) +
+  ylab("Congruency Effect (cycles)") 
+  # facet_wrap(~bias)
+p10.3
+
+ggsave ("sims/imitation/figures/ce_cycles_all.jpeg")
+```
+
+with bias as a facet_wrap (to help with a combined plot)
+
+```{r}
+p10.3b <- ggplot(rts_diff, aes(x = "", y = ce)) +
+  geom_violin() +
+  geom_jitter(width=0.1, alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=rts_diff_summary, aes(y=mean_ce), size =3) +
+  geom_errorbar(data=rts_diff_summary, aes(y = mean_ce, ymin=mean_ce-sem, ymax=mean_ce+sem), width=.2) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") +
+  # scale_y_continuous(limits = c(-10, 80)) +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position="none", legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold"),
+        axis.title.x=element_blank(), axis.ticks.x=element_blank()) +
+  ylab("Congruency Effect (cycles)") +
+  facet_wrap(~bias)
+p10.3b
+
+# ggsave ("sims/imitation/figures/ce_cycles_all.jpeg")
+```
+
+now combine RT and CE plots together
+
+```{r}
+p10.4 <- p10.2 / p10.3b
+p10.4
+
+ggsave ("sims/imitation/figures/rt_ce_cycles_all.jpeg")
+```
+
+# combine plots for cycles and activation across normal and bias conditions #
+
+```{r}
+p10.5 <- (p10.1 + theme(legend.position = "right")) / 
+        (p10.2 + theme(legend.position = "right"))
+p10.5
+
+ggsave ("sims/imitation/figures/time_cycle_all.jpeg")
+```
+
+add the ce diff to the same plot
+
+```{r}
+p10.6 <- (p10.1 + theme(legend.position = "right")) / 
+        (p10.2 + theme(legend.position = "right")) /
+        p10.3b
+p10.6
+
+ggsave ("sims/imitation/figures/time_rt_ce_all.jpeg")
+```
+
+
+## print session info ##
+
+```{r}
+sessionInfo()
+```
