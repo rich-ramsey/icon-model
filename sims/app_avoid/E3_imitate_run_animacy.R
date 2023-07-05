@@ -58,7 +58,7 @@ out$incorrect_resp = out$middle
 
 #' save the data with a unique filename
 if(nsims > 10) {
-  save_filename = sprintf("sims/app_avoid/aa_imitate_all_animacy_%s-%s.RData", 
+  save_filename = sprintf("sims/app_avoid/data/rdata/aa_imitate_all_animacy_%s-%s.RData", 
                          Sys.Date(), format(Sys.time(),"%H%M"))
   save(nn, out, file = save_filename)
 }
