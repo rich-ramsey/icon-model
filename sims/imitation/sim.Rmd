@@ -37,10 +37,10 @@ animacy_bias = .05 # Relative salience of the distractor is DECREASED
 ## save out a .RData file ##
 
 ```{r}
-# save_filename = sprintf("sims/imitation/out_imi_basic_%s-%s.RData",
+# save_filename = sprintf("sims/imitation/data/rdata/out_imi_basic_%s-%s.RData",
 #                        Sys.Date(), format(Sys.time(),"%H%M"))
 
-save_filename = sprintf("sims/imitation/out_animacy(%02d)_%s-%s.RData", 
+save_filename = sprintf("sims/imitation/data/rdata/out_animacy(%02d)_%s-%s.RData", 
                        100*animacy_bias, Sys.Date(), format(Sys.time(),"%H%M"))
 ```
 
