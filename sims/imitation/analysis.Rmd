@@ -29,7 +29,7 @@ read in relevant data files depending on how much wrangling needs doing.
 
 ```{r}
 out_imi_basic <- read_csv("sims/imitation/data/out_imi_basic.csv") 
-# load("sims/imitate/.RData") # test RW's prior data
+# load("sims/imitation/.RData") # test RW's prior data
 head(out_imi_basic)
 rts_imi_basic <- read_csv("sims/imitation/data/rts_imi_basic.csv")
 head(rts_imi_basic)
@@ -157,6 +157,56 @@ ggsave ("sims/imitation/figures/timecourse2b.jpeg")
 ```
 
 Note to Rob - data for the distractor feat_array and identity parameters are identical for timecourse activation plots. Does this make sense?
+
+## now plot timecourse as a function of task and accuracy ##
+
+wrangle
+
+```{r}
+timecourse_task <- out_imi_basic %>% 
+  select(task, cycle, correct_resp, incorrect_resp) %>% 
+  group_by(task, cycle) %>%
+  summarise(correct = mean(correct_resp), incorrect = mean(incorrect_resp)) %>%
+  pivot_longer(cols = c("correct", "incorrect"),
+               names_to = "response", values_to = "activation") %>% 
+  mutate(task = factor(task, levels = c("congr", "incon")),
+         response = factor(response, levels = c("correct", "incorrect"))) %>% 
+  select(task, response, cycle, activation) # just re-order slightly
+head(timecourse_task)
+```
+
+plot
+
+```{r}
+p1.4 <- ggplot(timecourse_task, aes(x = cycle, y = activation, color = response)) + 
+  geom_line() +
+  ggtitle('Mean response activation by approach-avoid condition') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position="bottom") +
+  facet_wrap(~task)
+p1.4
+
+ggsave ("sims/imitation/figures/timecourse_task.jpeg")
+```
+
+and now re-plotted with overlap rather than facet_wrap
+
+```{r}
+# legend within the figure
+p1.5 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = task)) + 
+  geom_line(aes(linetype=response)) +
+  # ggtitle('Mean response activation by condition') +
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold"))  
+p1.5
+
+ggsave ("sims/imitation/figures/timecourse_task2.jpeg")
+```
 
 
 ## speed-accuracy curve ##
@@ -315,8 +365,6 @@ write_csv(tidy_t_cycle, "sims/imitation/data/tidy_t_cycle.csv")
 write_csv(timecourse, "sims/imitation/data/timecourse.csv")
 ```
 
-
-
 ## section 2 ##
 
 ## take a look at simulated imitation data when the animacy bias is set higher ##
@@ -327,7 +375,6 @@ read in relevant data files depending on how much wrangling needs doing.
 
 ```{r}
 out_imi_hi <- read_csv("sims/imitation/data/out_imi_hi.csv") 
-# load("sims/imitate/.RData") # test RW's prior data
 head(out_imi_hi)
 rts_imi_hi <- read_csv("sims/imitation/data/rts_imi_hi.csv")
 head(rts_imi_hi)
