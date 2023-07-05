@@ -66,7 +66,7 @@ out$incorrect_resp = out$middle
 
 #' save the data with a unique filename
 if(nsims > 10) {
-  save_filename = sprintf("sims/app_avoid/aa_imitate_noisy_faces(%02d)_%s-%s.RData", 
+  save_filename = sprintf("sims/app_avoid/data/rdata/aa_imitate_noisy_faces(%02d)_%s-%s.RData", 
                          unit_noise*100, Sys.Date(), format(Sys.time(),"%H%M"))
   save(nn, out, file = save_filename)
 }
