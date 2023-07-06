@@ -11,7 +11,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This file takes the output from these five approach-avoid analysis scripts - E1_aa_run.R; E2_aa_noisy_intent.R; E2_aa_noisy_stim; E3_imitate_run_animacy; E3_imitate_run_noisy_faces (or the aa_sim.Rmd file, which does the same thing), wrangles the data, produces various plots and runs some statistical analyses. 
+This file takes the output from these five approach-avoid sim scripts - E1_aa_run.R; E2_aa_noisy_intent.R; E2_aa_noisy_stim; E3_imitate_run_animacy; E3_imitate_run_noisy_faces (or the aa_sim.Rmd file, which does the same thing), wrangles the data, produces various plots and runs some statistical analyses. 
 
 Note - some of these plots and analyses are the identical or similar to what the base R plotting files already produce. This is just a different way of going about it. And it does a few extra things, such as saves more files etc.
 
