@@ -23,7 +23,7 @@ out = search_task(nn, nsims, ncycles)
 
 #' save the data with a unique filename
 if(nsims > 10) {
-  save_filename = sprintf("sims/search/search_hard_%s-%s.RData", 
+  save_filename = sprintf("sims/search/data/rdata/search_hard_%s-%s.RData", 
                           Sys.Date(), format(Sys.time(),"%H%M"))
   save(nn, out, file = save_filename)
 }
