@@ -8,7 +8,7 @@ load('sims/imitation/out_basic_2023-06-27-1112.RData')
 
 toplot = out %>% 
   select(cycle, "T.feat.array" = fA33, "T.salience" = s33, "T.identity" = fA,
-         "D.feat.array" = fI, "D.salience" = s32, "D.identity" = fI)
+         "D.feat.array" = fI32, "D.salience" = s32, "D.identity" = fI)
 
 # "zooming" in on earlier cycles to see differences in timecourse
 plot_acts(toplot, roi = 2:7, cycles = 0:90, 
