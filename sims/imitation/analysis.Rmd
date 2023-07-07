@@ -76,7 +76,7 @@ head(rts_acc)
 ```{r}
 activation <- out_imi_basic %>% 
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
-         "Dfeat_array" = fI, "Dsalience" = s32, "Didentity" = fI) %>% 
+         "Dfeat_array" = fI32, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
                names_to = c("condition", "parameter"),
                names_sep = 1)  # separate columns based on the first letter
