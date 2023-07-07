@@ -5,4 +5,5 @@
 data/
 figures/
 summary/
+sandpit/
 *.RData
