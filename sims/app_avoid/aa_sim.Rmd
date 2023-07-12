@@ -204,7 +204,25 @@ if(G[['nsims']] > 10) {
 write_csv(out, "sims/app_avoid/data/out_aa_stim.csv")
 ```
 
+## load previously saved data ##
+
+This could be useful if you want to re-calculate RT data without re-running the
+simulations again. Just load one at a time.
+
+```{r}
+# out <- read_csv("sims/app_avoid/data/out_aa_basic.csv")
+
+# out <- read_csv("sims/app_avoid/data/out_aa_intent.csv")
+# 
+# out <- read_csv("sims/app_avoid/data/out_aa_stim.csv")
+```
+
 ## a quick overview of results (currently stored in variable "out") ##
+
+A note on setting epsilon in the aa_analysis.R script. For out_aa_basic and 
+out_aa_intent, it would should work fine as it is set. But for out_aa_stim, it
+needs lowering to .00005. Edit the R code directly when analysing RT for this
+simulation.
 
 ```{r}
 plan(multicore)
@@ -280,6 +298,17 @@ write_csv(out, "sims/app_avoid/data/out_aa_imitate.csv")
 ```{r}
 #sim5
 write_csv(out, "sims/app_avoid/data/out_aa_imitate_noisy_faces.csv")
+```
+
+## load previously saved data ##
+
+This could be useful if you want to re-calculate RT data without re-running the
+simulations again. Just load one at a time.
+
+```{r}
+# out <- read_csv("sims/app_avoid/data/out_aa_imitate.csv")
+
+# out <- read_csv("sims/app_avoid/data/out_aa_imitate_noisy_faces.csv")
 ```
 
 ## calculate RT data ##
