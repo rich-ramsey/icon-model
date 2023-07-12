@@ -145,9 +145,9 @@ p2.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_line() + 
   geom_point(aes(x=rts_mean$mean_rt, y=rts_acc$mean_acc), shape=1, size = 3) +
   geom_vline(aes(xintercept=rts_mean$mean_rt), colour="blue") +
-  geom_text(x=75, y=0.25, label="mean RT=43.61", colour = "blue", fontface=2) +
+  geom_text(x=75, y=0.25, label="mean RT=42.95", colour = "blue", fontface=2) +
   geom_hline(aes(yintercept=rts_acc$mean_acc), colour="red") +
-  geom_text(x=75, y=0.95, label="mean accuracy=99", colour = "red", fontface=2) +
+  geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
   labs(title = "speed vs. accuracy curve",
        x = "RT (cycles)", y = "Accuracy (%)") +
   theme_bw() +
@@ -163,8 +163,8 @@ plot the compatibility effect (CE) against accuracy
 p2.2 <- ggplot(roc, aes(x = taskdiff, y = acc)) +
   geom_point() + 
   geom_point(shape=1, size = 3) +
-  geom_vline(aes(xintercept=subset(roc, acc >= 0.99)$taskdiff[1]), colour="blue") +
-  geom_hline(aes(yintercept=0.99), colour="red") +
+  geom_vline(aes(xintercept=subset(roc, acc >= 0.98)$taskdiff[1]), colour="blue") +
+  geom_hline(aes(yintercept=0.98), colour="red") +
   labs(title = "congruency effect vs. accuracy curve",
        x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
   theme_bw()
@@ -187,7 +187,7 @@ ggsave ("sims/app_avoid/figures/roc.jpeg")
 This might be more efficient in a paper. 
 
 ```{r}
-p2.4 <- p1.2 | p2.1 / p2.2
+p2.4 <- p1.5 | p2.1 / p2.2
 p2.4 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(size = 16))
 # p2.4
@@ -436,9 +436,9 @@ p5.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_line() + 
   geom_point(aes(x=rts_mean$mean_rt, y=rts_acc$mean_acc), shape=1, size = 3) +
   geom_vline(aes(xintercept=rts_mean$mean_rt), colour="blue") +
-  geom_text(x=75, y=0.25, label="mean RT=36.6", colour = "blue", fontface=2) +
+  geom_text(x=75, y=0.25, label="mean RT=36.21", colour = "blue", fontface=2) +
   geom_hline(aes(yintercept=rts_acc$mean_acc), colour="red") +
-  geom_text(x=75, y=0.95, label="mean accuracy=99", colour = "red", fontface=2) +
+  geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
   labs(title = "speed vs. accuracy curve",
        x = "RT (cycles)", y = "Accuracy (%)") +
   theme_bw() +
@@ -454,8 +454,8 @@ plot the compatibility effect (CE) against accuracy
 p5.2 <- ggplot(roc, aes(x = taskdiff, y = acc)) +
   geom_point() + 
   geom_point(shape=1, size = 3) +
-  geom_vline(aes(xintercept=subset(roc, acc >= 0.99)$taskdiff[1]), colour="blue") +
-  geom_hline(aes(yintercept=0.99), colour="red") +
+  geom_vline(aes(xintercept=subset(roc, acc >= 0.98)$taskdiff[1]), colour="blue") +
+  geom_hline(aes(yintercept=0.98), colour="red") +
   labs(title = "congruency effect vs. accuracy curve",
        x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
   theme_bw()
@@ -726,9 +726,9 @@ p8.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_line() + 
   geom_point(aes(x=rts_mean$mean_rt, y=rts_acc$mean_acc), shape=1, size = 3) +
   geom_vline(aes(xintercept=rts_mean$mean_rt), colour="blue") +
-  geom_text(x=75, y=0.25, label="mean RT=33.5", colour = "blue", fontface=2) +
+  geom_text(x=75, y=0.25, label="mean RT=33.32", colour = "blue", fontface=2) +
   geom_hline(aes(yintercept=rts_acc$mean_acc), colour="red") +
-  geom_text(x=75, y=0.95, label="mean accuracy=99", colour = "red", fontface=2) +
+  geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
   labs(title = "speed vs. accuracy curve",
        x = "RT (cycles)", y = "Accuracy (%)") +
   theme_bw() +
@@ -744,8 +744,8 @@ plot the compatibility effect (CE) against accuracy
 p8.2 <- ggplot(roc, aes(x = taskdiff, y = acc)) +
   geom_point() + 
   geom_point(shape=1, size = 3) +
-  geom_vline(aes(xintercept=subset(roc, acc >= 0.99)$taskdiff[1]), colour="blue") +
-  geom_hline(aes(yintercept=0.99), colour="red") +
+  geom_vline(aes(xintercept=subset(roc, acc >= 0.98)$taskdiff[1]), colour="blue") +
+  geom_hline(aes(yintercept=0.98), colour="red") +
   labs(title = "congruency effect vs. accuracy curve",
        x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
   theme_bw()
