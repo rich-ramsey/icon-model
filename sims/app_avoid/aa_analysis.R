@@ -16,8 +16,14 @@ source('sims/RTs.R')
 # responses that meets the accuracy_required criterion. It is explained further
 # in the RTs_generate comments. In this case, the default response alternatives,
 # (correct_response, incorrect_response) were created in imitation_task.R 
+
+# A note on epsilon. For the aa task, when using epsilon = .005 
+# (like the other sims), it sometimes skipped 98% and landed on 99%. 
+# Make epsilon smaller, to make the increments smaller. 0.001 worked for _basic 
+# and _intent, whereas .00005 worked for _stim. It takes longer though.
+
 rt_data = RTs_generate(out, task1 = "congr", task2 = "incon",
-                       accuracy_required = .98, epsilon = .005)
+                       accuracy_required = .98, epsilon = .001)
 
 # some basic RT comparisons follow
 rt_overview(rt_data)
