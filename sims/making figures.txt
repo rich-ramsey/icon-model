@@ -7,6 +7,7 @@ IMITATE.SALIENCE - E2_imi_salience_plot.R
 AA.TIMECOURSE, AA.RTS - aa_analysis.R on the "out" dataframe saved in aa_sim_....RData"
 AA.DISRUPT - E2_fig_aa.disrupt.R
 AA.SPECIFICITY - E2_fig_aa.specificity.R
+ASD.DISRUPT - E4_global_noise_compare.R -- This loads outputs created from E4_globalnoise_aa_run: global noise: .01 or .04, stim noise: 0 or .1
 
 ----
 
