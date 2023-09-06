@@ -1060,11 +1060,11 @@ rts_easy <- read_csv("sims/search/data/rts_easy.csv") %>%
 head(rts_easy)
 
 rts_hard <- read_csv("sims/search/data/rts_hard.csv") %>% 
-  mutate(difficulty = "hard")
+  mutate(difficulty = "hard_high_criterion")
 head(rts_hard)
 
 rts_hard_85 <- read_csv("sims/search/data/rts_hard_85.csv") %>% 
-  mutate(difficulty = "hard_85")
+  mutate(difficulty = "hard_low_criterion")
 head(rts_hard_85)
 ```
 
@@ -1074,7 +1074,7 @@ join them together and create a factor
 rts_all <- rbind(rts_base, rts_easy, rts_hard, rts_hard_85) %>%
   select(simno, task, difficulty, acc, cycle) %>% 
   mutate(task = factor(task, levels = c("3", "10")),
-         difficulty = factor(difficulty, levels = c("baseline", "easy", "hard", "hard_85"))) %>% 
+         difficulty = factor(difficulty, levels = c("baseline", "easy", "hard_high_criterion", "hard_low_criterion"))) %>% 
   filter(acc==1)
 head(rts_all)
 # summary(rts_all)
