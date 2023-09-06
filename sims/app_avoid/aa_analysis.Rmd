@@ -1013,17 +1013,6 @@ p10.5
 ggsave ("sims/app_avoid/figures/time_cycle_all.jpeg")
 ```
 
-add the ce diff to the same plot
-
-```{r}
-p10.6 <- (p10.1 + theme(legend.position = "right")) / 
-        (p10.2 + theme(legend.position = "right")) /
-        p10.3b
-p10.6
-
-ggsave ("sims/app_avoid/figures/time_rt_ce_all.jpeg")
-```
-
 
 ## section 5 ##
 
