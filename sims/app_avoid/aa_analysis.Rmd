@@ -992,7 +992,7 @@ p10.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2") +
-  # scale_y_continuous(limits = c(0, 150)) +
+  scale_y_continuous(limits = c(0, 160)) +
   theme(text=element_text(size=18), title=element_text(size=18),
         legend.position="none", legend.text = element_text(size=10), 
         legend.title = element_text(size = 10, face = "bold")) +
@@ -1063,7 +1063,7 @@ p11.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2") +
-  scale_y_continuous(limits = c(0, 100)) +
+  scale_y_continuous(limits = c(0, 150)) +
   theme(text=element_text(size=18), title=element_text(size=18),
         legend.position="none", legend.text = element_text(size=10), 
         legend.title = element_text(size = 10, face = "bold")) +
@@ -1071,7 +1071,7 @@ p11.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   facet_wrap(~noise)
 p11.2
 
-# ggsave ("sims/app_avoid/figures/rt_aa_imitate_cycles_all.jpeg")
+ggsave ("sims/app_avoid/figures/rt_aa_imitate_cycles.jpeg")
 ```
 
 
