@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This file runs src simulations for the approach-avoid task. 
 
-There are five different types of simulation that can be run.
+There are eight different types of simulation that can be run.
 
 In the section 1, there are three simulations that follow a similar format. These
 are the primary approach-avoid simulations.
@@ -22,7 +22,9 @@ are the primary approach-avoid simulations.
 
 2. Damaged Intentions. This adds noise to the intention aspect of the model (noisy_intent).
 
-3. Damaged Stimuli Encoding. This adds noise to the face processing aspects of the model i.e., processing the external visual stimulus (noisy_stim).
+3. Damaged Stimuli Encoding. This adds noise to the face processing aspects of 
+the model i.e., processing the external visual stimulus (noisy_stim).
+
 
 In the section 2, there are two further simulations, which act as a test of
 task-specificity. We re-run the 'imitation' task using the normal settings and 
@@ -33,6 +35,27 @@ but not the imitation task).
 4. Re-do the basic imitation task.
 
 5. Run the imitation task with noise disruption to the face stim unit.
+
+
+In section 3, there are three further simulations, which add noise to the 
+stimulus component of the model, the general noise component of the model, and then
+both components together. The aim of doing so is to address questions about the
+specificity or generality of the mechanisms that may underly social information
+processing variation across the austism spectrum.
+
+6. Damaged Stimuli Encoding. This adds noise to the face processing aspects of 
+the model i.e., processing the external visual stimulus (noisy_stim), but to a 
+lower degree than was simulated in Sim #3 listed above.
+
+7. Increased global noise. By increasing global noise, we decrease the efficiency of 
+the model and increase the time required for it to relax into a stable state. 
+That is, increased global noise leads to a slower and less effective process 
+of biased competition. However, stimulus encoding remained intact and as it was
+in the baseline model.
+
+8. Damaged stimuli encoding and increased global noise. Noise additions from
+sim #6 and #7 together.
+
 
 ## section 1 ##
 
@@ -332,6 +355,202 @@ write_csv(rt_data, "sims/app_avoid/data/rts_aa_imitate.csv")
 ```{r}
 #sim5
 write_csv(rt_data, "sims/app_avoid/data/rts_aa_imitate_noisy_faces.csv")
+```
+
+
+## section 3 ##
+
+## simulations 6, 7 & 8 ##
+
+## clear everything to start with a fresh environment ##
+
+```{r}
+rm(list = ls())
+```
+
+## Load the libraries we will be using ##
+
+see packages.Rmd in the /5x5/ folder
+
+## Source the global experiment parameters ##
+
+This avoids inconsistencies between the runs of E1 (basic aa) and E2 (noise disruption)
+
+```{r}
+source('sims/app_avoid/aa_task.R')
+set.seed(55)
+```
+
+Uncomment one of the chunks, as appropriate.
+
+## add level of damage/noise for face processing component ##
+
+damaged stimuli encoding 
+
+uncomment one of these chunks, as appropriate.
+
+sims 6 and 8. face processing noise added.
+
+```{r}
+# DAMAGE
+# In this case disruption is specific to the processing of faces
+# fa = angry, fh = happy 
+G$noisy_units = c("fh", "fa")
+G$unit_noise = .1 ## sims 6 and 8
+```
+
+sim 7. no face processing noise added.
+
+```{r}
+# DAMAGE
+# In this case disruption is specific to the processing of faces
+# fa = angry, fh = happy 
+# G$noisy_units = c("fh", "fa")
+# G$unit_noise = 0 ## sim 7
+```
+
+## setup a function ##
+
+```{r}
+run_aa_noise_sims = function(network, label, ext_units) {
+  network = reset(network)
+  network = clear_external(network)
+  ext_units = G[[ext_units]]
+  network = set_external(network, units = ext_units, act = G[['ext_acts']])
+  out = sim_batch_noisy(network, nsims = G[['nsims']], ncycles = G[['ncycles']],
+                        noisy_units = G[['noisy_units']],
+                        xtra_unit_noise = G[['unit_noise']])
+  out = cbind(data.frame(task = label), out)
+  return(out)
+}
+```
+
+## read networks, set the level of global noise and run the simulation ##
+
+To set the level of global noise appropriately, uncomment one of these chunks.
+
+Sim 6. Global noise is at its default / baseline level. .01.
+
+```{r}
+# plan(multicore)
+# nn = read_net(G[['nnfile']], verbose = FALSE)
+# congr_out = run_aa_noise_sims(nn, "congr", 'congr_task')
+# incon_out = run_aa_noise_sims(nn, "incon", 'incon_task')
+# out = rbind(congr_out, incon_out)
+# message('Finished.')
+```
+
+Sims 7 and 8. Global noise is increased to .04.
+
+```{r}
+plan(multicore)
+nn = read_net(G[['nnfile']], verbose = FALSE)
+nn$params$noise = .04
+
+congr_out = run_aa_noise_sims(nn, "congr", 'congr_task')
+incon_out = run_aa_noise_sims(nn, "incon", 'incon_task')
+out = rbind(congr_out, incon_out)
+message('Finished.')
+```
+
+## Explicitly identify the activations representing correct and incorrect responses ##
+
+This is useful for the next step of RT and accuracy analysis 
+
+```{r}
+out$correct_resp = out$aa13
+out$incorrect_resp = out$aa53
+```
+
+## save data with a unique filename ##
+
+uncomment one chunk, as appropriate.
+
+for sim 6, where noise is added to the stimuli processing component only.
+
+```{r}
+# if(G[['nsims']] > 10) {
+#   save_filename = sprintf("sims/app_avoid/data/rdata/aa_stim_noise(%02d)_%s-%s.RData",
+#                           100*G$unit_noise,
+#                           Sys.Date(), format(Sys.time(),"%H%M"))
+#   save(nn, out, file = save_filename)
+#   message(sprintf("Simulation output and network saved as file %s",
+#                   save_filename))
+# }
+```
+
+for sims 7 and 8, where noise can be added to stimuli processing and/or global 
+noise is added.
+
+```{r}
+if(G[['nsims']] > 10) {
+  save_filename = sprintf("sims/app_avoid/data/rdata/aa_stimglob_noise(%02d_%03d)_%s-%s.RData",
+                          100*G$unit_noise, 1000*nn$params$noise,
+                          Sys.Date(), format(Sys.time(),"%H%M"))
+  save(nn, out, file = save_filename)
+  message(sprintf("Simulation output and network saved as file %s",
+                  save_filename))
+}
+```
+
+## write out the files of interest as .csv files ##
+
+```{r}
+# write_csv(out, "sims/app_avoid/data/out_aa_stim_10.csv")
+
+# write_csv(out, "sims/app_avoid/data/out_aa_global.csv")
+
+write_csv(out, "sims/app_avoid/data/out_aa_stim_global.csv")
+```
+
+## load previously saved data ##
+
+This could be useful if you want to re-calculate RT data without re-running the
+simulations again. Just load one at a time.
+
+```{r}
+# out <- read_csv("sims/app_avoid/data/out_aa_stim_10.csv")
+
+# out <- read_csv("sims/app_avoid/data/out_aa_global.csv")
+# 
+# out <- read_csv("sims/app_avoid/data/out_aa_stim_global.csv")
+```
+
+## a quick overview of results (currently stored in variable "out") ##
+
+A note on setting epsilon in the aa_analysis.R script. For out_aa_basic and 
+out_aa_intent, it would should work fine as it is set. But for out_aa_stim, it
+needs lowering to .00005. Edit the R code directly when analysing RT for this
+simulation.
+
+```{r}
+plan(multicore)
+source("sims/app_avoid/aa_analysis.R")
+```
+
+## save out rt data ##
+
+comment out, as appropriate.
+
+noisy stim
+
+```{r}
+# write_csv(rt_data[[1]], "sims/app_avoid/data/rts_aa_stim_10.csv")
+# write_csv(rt_data[[2]], "sims/app_avoid/data/roc_aa_stim_10.csv")
+```
+
+global noise
+
+```{r}
+# write_csv(rt_data[[1]], "sims/app_avoid/data/rts_aa_global.csv")
+# write_csv(rt_data[[2]], "sims/app_avoid/data/roc_aa_global.csv")
+```
+
+noisy stim and global noise
+
+```{r}
+write_csv(rt_data[[1]], "sims/app_avoid/data/rts_aa_stim_global.csv")
+write_csv(rt_data[[2]], "sims/app_avoid/data/roc_aa_stim_global.csv")
 ```
 
 ## print session info ##
