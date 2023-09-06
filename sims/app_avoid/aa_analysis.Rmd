@@ -11,9 +11,26 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This file takes the output from these five approach-avoid sim scripts - E1_aa_run.R; E2_aa_noisy_intent.R; E2_aa_noisy_stim; E3_imitate_run_animacy; E3_imitate_run_noisy_faces (or the aa_sim.Rmd file, which does the same thing), wrangles the data, produces various plots and runs some statistical analyses. 
+This file takes the output from these six approach-avoid sim scripts - 
+E1_aa_run.R; E2_aa_noisy_intent.R; E2_aa_noisy_stim; E3_imitate_run_animacy; 
+E3_imitate_run_noisy_faces; E4_aa_noisy_stim_global (or the aa_sim.Rmd file, 
+which does the same thing), wrangles the data, produces various plots and runs 
+some statistical analyses. 
 
-Note - some of these plots and analyses are the identical or similar to what the base R plotting files already produce. This is just a different way of going about it. And it does a few extra things, such as saves more files etc.
+Note - some of these plots and analyses are the identical or similar to what 
+the base R plotting files already produce. This is just a different way of 
+going about it. And it does a few extra things, such as saves more files etc.
+
+There are seven sections.
+
+section 1. basic aa plots. default/baseline settings.
+section 2. intention damage.
+section 3. stim damage.
+section 4  plot aa sims together.
+section 5. wrangle and plot imitation sims (with stim component damage)
+section 6. plot aa and imitation sims (with stim component damage) together
+section 7. plot sims from stim damage (at a lower level) plus increased global 
+noise sims.
 
 ## Load the libraries we will be using ##
 
@@ -1165,6 +1182,78 @@ p12.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
 p12.2
 
 ggsave ("sims/app_avoid/figures/aa_imi_rt_cycles_all.jpeg")
+```
+
+
+## section 7 ##
+
+plot sims from stim damage (at a lower level than earlier stim damage) plus increased global noise sims.
+
+## by wrangling and combining dataframes ##
+
+# rt (cycles) #
+
+load the data and add a noise variable
+
+```{r}
+rts_aa <- read_csv("sims/app_avoid/data/rts_aa_basic.csv") %>% 
+  mutate(noise = "baseline")
+head(rts_aa)
+
+rts_aa_stim_10 <- read_csv("sims/app_avoid/data/rts_aa_stim_10.csv") %>% 
+  mutate(noise = "stimulus")
+head(rts_aa_stim_10)
+
+rts_aa_global <- read_csv("sims/app_avoid/data/rts_aa_global.csv") %>% 
+  mutate(noise = "global")
+head(rts_aa_global)
+
+rts_aa_stim_global <- read_csv("sims/app_avoid/data/rts_aa_stim_global.csv") %>% 
+  mutate(noise = "stimulus_global")
+head(rts_aa_stim_global)
+```
+
+join them together and create a factor
+
+```{r}
+rts_all <- rbind(rts_aa, rts_aa_stim_10, rts_aa_global, rts_aa_stim_global) %>%
+  select(simno, task, noise, acc, cycle) %>% 
+  mutate(task = factor(task, levels = c("congr", "incon")),
+         noise = factor(noise, levels = c("baseline", "stimulus", "global", "stimulus_global"))) %>% 
+  filter(acc==1)
+head(rts_all)
+# summary(rts_all)
+```
+
+create summary data
+
+```{r}
+rts_all_summary <- rts_all %>%
+  group_by(task, noise) %>% 
+  summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
+rts_all_summary
+```
+
+plot
+
+```{r}
+p13 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
+  geom_violin() +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
+  geom_errorbar(data=rts_all_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2") +
+  # scale_y_continuous(limits = c(0, 150)) +
+  theme(text=element_text(size=18), title=element_text(size=18),
+        legend.position="none", legend.text = element_text(size=10), 
+        legend.title = element_text(size = 10, face = "bold")) +
+  ylab("RT (cycles)") +
+  facet_wrap(~noise, nrow = 1)
+p13
+
+ggsave ("sims/app_avoid/figures/aa_stim_global_rt_cylces.jpeg")
 ```
 
 ## print session info ##
