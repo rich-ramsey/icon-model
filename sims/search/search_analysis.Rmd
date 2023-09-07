@@ -72,8 +72,7 @@ head(rts_acc)
 
 ## select relevant variables to plot ##
 
-This would need editing to be appropriate, given that it uses a different design
-to the prior sims.
+This would need editing to be appropriate, given that it uses a different design to the prior sims.
 
 ```{r}
 # timecourse_task <- out_search_basic %>% 
@@ -130,6 +129,18 @@ roc <- roc_search_basic
 head(roc)
 ```
 
+set some common theme elements for line plots. 
+
+```{r}
+theme_set(
+  theme_bw() +
+    theme(text=element_text(size=22, face = "bold"), 
+        title=element_text(size=22),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=16),
+        legend.title = element_text(size = 16, face = "bold"))
+)
+```
+
 plot RT against accuracy
 
 ```{r}
@@ -142,8 +153,8 @@ p2.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
   labs(title = "speed vs. accuracy curve",
        x = "RT (cycles)", y = "Accuracy (%)") +
-  theme_bw() +
-  xlim(0,200)
+  # theme_bw() +
+  xlim(0,150)
 p2.1
 
 ggsave ("sims/search/figures/roc_rt.jpeg")
@@ -387,8 +398,8 @@ p5.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
   labs(title = "speed vs. accuracy curve",
        x = "RT (cycles)", y = "Accuracy (%)") +
-  theme_bw() +
-  xlim(0,200)
+  # theme_bw() +
+  xlim(0,150)
 p5.1
 
 ggsave ("sims/search/figures/roc_rt_easy.jpeg")
@@ -427,7 +438,7 @@ p6.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
   geom_errorbar(data=subset(rts_summary, acc==1), aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=subset(rts_summary, acc==1), aes(y=mean_rt, group=1)) +
-  theme_bw() +
+  theme(legend.position="right") +
   scale_fill_brewer(palette = "Dark2") 
 p6.3
 
@@ -632,8 +643,8 @@ p8.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
   labs(title = "speed vs. accuracy curve",
        x = "RT (cycles)", y = "Accuracy (%)") +
-  theme_bw() +
-  xlim(0,200)
+  # theme_bw() +
+  xlim(0,150)
 p8.1
 
 ggsave ("sims/search/figures/roc_rt_hard.jpeg")
@@ -672,7 +683,7 @@ p9.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
   geom_errorbar(data=subset(rts_summary, acc==1), aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=subset(rts_summary, acc==1), aes(y=mean_rt, group=1)) +
-  theme_bw() +
+  theme(legend.position="right") +
   scale_fill_brewer(palette = "Dark2") 
 p9.3
 
@@ -914,8 +925,8 @@ p11.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
   labs(title = "speed vs. accuracy curve",
        x = "RT (cycles)", y = "Accuracy (%)") +
-  theme_bw() +
-  xlim(0,200)
+  # theme_bw() +
+  xlim(0,150)
 p11.1
 
 ggsave ("sims/search/figures/roc_rt_hard_85.jpeg")
@@ -954,7 +965,7 @@ p12.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
   geom_errorbar(data=subset(rts_summary, acc==1), aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=subset(rts_summary, acc==1), aes(y=mean_rt, group=1)) +
-  theme_bw() +
+  theme(legend.position="right") +
   scale_fill_brewer(palette = "Dark2") 
 p12.3
 
@@ -1089,6 +1100,16 @@ rts_all_summary <- rts_all %>%
 rts_all_summary
 ```
 
+change the theme settings for plotting
+
+```{r}
+theme_set(
+  theme_bw() +
+    theme(text=element_text(size=18, face = "bold"),
+        legend.position="none")
+)
+```
+
 plot
 
 ```{r}
@@ -1098,93 +1119,14 @@ p13.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
   geom_errorbar(data=rts_all_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
-  theme_bw() +
   scale_fill_brewer(palette = "Dark2") +
   # scale_y_continuous(limits = c(0, 150)) +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="none", legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold")) +
   ylab("RT (cycles)") +
   facet_wrap(~difficulty, nrow=1)
 p13.2
 
-ggsave ("sims/search/figures/rt_cycles_all.jpeg")
-```
-
-now wrangle and plot the difference score or congruency effect
-
-first wrangle the diff score or ce
-
-```{r}
-rts_diff <- rts_all %>% 
-  pivot_wider(names_from = "task",
-              values_from = "cycle") %>%
-  mutate(ce = `10` - `3`) # use backticks when column names are numbers
-rts_diff
-# summary(rts_diff)
-```
-
-create a summary
-
-```{r}
-rts_diff_summary <- rts_diff %>%
-  group_by(difficulty) %>% 
-  summarise(mean_ce=mean(ce, na.rm=TRUE), sd=sd(ce, na.rm=TRUE), n=n(), sem=sd/sqrt(n))
-rts_diff_summary  
-```
-
-then plot 
-
-(with difficulty on the x-axis)
-
-```{r}
-p13.3 <- ggplot(rts_diff, aes(x = difficulty, y = ce)) +
-  geom_violin() +
-  geom_jitter(width=0.1, alpha = 0.8, colour = "darkgrey") +
-  geom_point(data=rts_diff_summary, aes(y=mean_ce), size =3) +
-  geom_errorbar(data=rts_diff_summary, aes(y = mean_ce, ymin=mean_ce-sem, ymax=mean_ce+sem), width=.2) +
-  theme_bw() +
-  # scale_fill_brewer(palette = "Dark2") +
-  # scale_y_continuous(limits = c(-10, 80)) +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="none", legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold")) +
-  ylab("Congruency Effect (cycles)") 
-  # facet_wrap(~difficulty)
-p13.3
-
-ggsave ("sims/search/figures/ce_cycles_all.jpeg")
-```
-
-with difficulty as a facet_wrap (to help with a combined plot)
-
-```{r}
-p13.3b <- ggplot(rts_diff, aes(x = "", y = ce)) +
-  geom_violin() +
-  geom_jitter(width=0.1, alpha = 0.8, colour = "darkgrey") +
-  geom_point(data=rts_diff_summary, aes(y=mean_ce), size =3) +
-  geom_errorbar(data=rts_diff_summary, aes(y = mean_ce, ymin=mean_ce-sem, ymax=mean_ce+sem), width=.2) +
-  theme_bw() +
-  scale_fill_brewer(palette = "Dark2") +
-  # scale_y_continuous(limits = c(-10, 80)) +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="none", legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold"),
-        axis.title.x=element_blank(), axis.ticks.x=element_blank()) +
-  ylab("Congruency Effect (cycles)") +
-  facet_wrap(~difficulty, nrow = 1)
-p13.3b
-
-# ggsave ("sims/search/figures/ce_cycles_all.jpeg")
-```
-
-now combine RT and CE plots together
-
-```{r}
-p13.4 <- p13.2 / p13.3b
-p13.4
-
-ggsave ("sims/search/figures/rt_ce_cycles_all.jpeg")
+ggsave ("sims/search/figures/rt_cycles_all.jpeg",
+        width = 9, height = 4)
 ```
 
 ## print session info #
