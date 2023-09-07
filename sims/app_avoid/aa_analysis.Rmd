@@ -99,6 +99,18 @@ plotted. We'll skip this for now, as we didn't produce it in the paper.
 Instead, we'll skip straight to timecourse as a function of task (congr, incon)
 and response (correct, incorrect)
 
+set some common theme elements for line plots. 
+
+```{r}
+theme_set(
+  theme_bw() +
+    theme(text=element_text(size=22, face = "bold"), 
+        title=element_text(size=22),
+        legend.position=c(0.8,0.5), legend.text = element_text(size=16),
+        legend.title = element_text(size = 16, face = "bold"))
+)
+```
+
 ```{r}
 timecourse_task <- out_aa_basic %>% 
   select(task, cycle, correct_resp, incorrect_resp) %>% 
@@ -119,9 +131,7 @@ p1.4 <- ggplot(timecourse_task, aes(x = cycle, y = activation, color = response)
   geom_line() +
   ggtitle('Mean response activation by approach-avoid condition') +
   scale_color_brewer(palette = "Dark2") +
-  theme_bw() +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="bottom") +
+  theme(legend.position="bottom") +
   facet_wrap(~task)
 p1.4
 
@@ -133,16 +143,13 @@ and now re-plotted with overlap rather than facet_wrap
 ```{r}
 # legend within the figure
 p1.5 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = task)) + 
-  geom_line(aes(linetype=response)) +
+  geom_line(aes(linetype=response), linewidth = 1.5) +
   # ggtitle('Mean response activation by condition') +
-  scale_color_brewer(palette = "Dark2") +
-  theme_bw() +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold"))  
+  scale_color_brewer(palette = "Dark2") 
 p1.5
 
-ggsave ("sims/app_avoid/figures/timecourse_task2.jpeg")
+ggsave ("sims/app_avoid/figures/timecourse_task2.jpeg",
+        width = 7, height = 5)
 ```
 
 
@@ -165,10 +172,9 @@ p2.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_text(x=75, y=0.25, label="mean RT=42.95", colour = "blue", fontface=2) +
   geom_hline(aes(yintercept=rts_acc$mean_acc), colour="red") +
   geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
-  labs(title = "speed vs. accuracy curve",
-       x = "RT (cycles)", y = "Accuracy (%)") +
-  theme_bw() +
-  xlim(0,200)
+  labs(x = "RT (cycles)", y = "Accuracy (%)") +
+  # theme_bw() +
+  xlim(0,150)
 p2.1
 
 ggsave ("sims/app_avoid/figures/roc_rt.jpeg")
@@ -182,9 +188,8 @@ p2.2 <- ggplot(roc, aes(x = taskdiff, y = acc)) +
   geom_point(shape=1, size = 3) +
   geom_vline(aes(xintercept=subset(roc, acc >= 0.98)$taskdiff[1]), colour="blue") +
   geom_hline(aes(yintercept=0.98), colour="red") +
-  labs(title = "congruency effect vs. accuracy curve",
-       x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
-  theme_bw()
+  labs(x = "Congruency Effect (cycles)", y = "Accuracy (%)") 
+  # theme_bw()
 p2.2
 
 ggsave ("sims/app_avoid/figures/roc_ce.jpeg")
@@ -194,9 +199,11 @@ combined ROC plots
 
 ```{r}
 p2.3 <- p2.1 | p2.2
-p2.3
+p2.3 + plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 30))
 
-ggsave ("sims/app_avoid/figures/roc.jpeg")
+ggsave ("sims/app_avoid/figures/roc.jpeg",
+        width = 10, height = 5)
 ```
 
 ## combine activation and ROC plots ##
@@ -206,7 +213,7 @@ This might be more efficient in a paper.
 ```{r}
 p2.4 <- p1.5 | p2.1 / p2.2
 p2.4 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 # p2.4
 
 ggsave ("sims/app_avoid/figures/timecourse_roc.jpeg")
@@ -284,7 +291,7 @@ with a violin plot
 ```{r}
 p3.5 <- p1.5 | p3.3
 p3.5 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 #p3.5
 
 ggsave ("sims/app_avoid/figures/timecourse_rt_violin.jpeg")
@@ -295,7 +302,7 @@ with a boxplot
 ```{r}
 p3.6 <- p1.5 | p3.2
 p3.6 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 #p3.6
 
 ggsave ("sims/app_avoid/figures/timecourse_rt_box.jpeg")
@@ -410,9 +417,7 @@ p4.4 <- ggplot(timecourse_task, aes(x = cycle, y = activation, color = response)
   geom_line() +
   ggtitle('Mean response activation by approach-avoid condition') +
   scale_color_brewer(palette = "Dark2") +
-  theme_bw() +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="bottom") +
+  theme(legend.position="bottom") +
   facet_wrap(~task)
 p4.4
 
@@ -424,16 +429,13 @@ and now re-plotted with overlap rather than facet_wrap
 ```{r}
 # legend within the figure
 p4.5 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = task)) + 
-  geom_line(aes(linetype=response)) +
+  geom_line(aes(linetype=response), linewidth = 1.5) +
   # ggtitle('Mean response activation by condition') +
-  scale_color_brewer(palette = "Dark2") +
-  theme_bw() +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold"))  
+  scale_color_brewer(palette = "Dark2") 
 p4.5
 
-ggsave ("sims/app_avoid/figures/timecourse_task2_intent.jpeg")
+ggsave ("sims/app_avoid/figures/timecourse_task2_intent.jpeg",
+        width = 7, height = 5)
 ```
 
 
@@ -456,10 +458,9 @@ p5.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_text(x=75, y=0.25, label="mean RT=36.21", colour = "blue", fontface=2) +
   geom_hline(aes(yintercept=rts_acc$mean_acc), colour="red") +
   geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
-  labs(title = "speed vs. accuracy curve",
-       x = "RT (cycles)", y = "Accuracy (%)") +
-  theme_bw() +
-  xlim(0,200)
+  labs(x = "RT (cycles)", y = "Accuracy (%)") +
+  # theme_bw() +
+  xlim(0,150)
 p5.1
 
 ggsave ("sims/app_avoid/figures/roc_rt_intent.jpeg")
@@ -473,9 +474,8 @@ p5.2 <- ggplot(roc, aes(x = taskdiff, y = acc)) +
   geom_point(shape=1, size = 3) +
   geom_vline(aes(xintercept=subset(roc, acc >= 0.98)$taskdiff[1]), colour="blue") +
   geom_hline(aes(yintercept=0.98), colour="red") +
-  labs(title = "congruency effect vs. accuracy curve",
-       x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
-  theme_bw()
+  labs(x = "Congruency Effect (cycles)", y = "Accuracy (%)") 
+  # theme_bw()
 p5.2
 
 ggsave ("sims/app_avoid/figures/roc_ce_intent.jpeg")
@@ -485,9 +485,11 @@ combined ROC plots
 
 ```{r}
 p5.3 <- p5.1 | p5.2
-p5.3
+p5.3 + plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 30))
 
-ggsave ("sims/app_avoid/figures/roc_intent.jpeg")
+ggsave ("sims/app_avoid/figures/roc_intent.jpeg",
+        width = 10, height = 5)
 ```
 
 ## combine activation and ROC plots ##
@@ -497,10 +499,11 @@ This might be more efficient in a paper.
 ```{r}
 p5.4 <- p4.5 | p5.1 / p5.2
 p5.4 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 # p5.4
 
-ggsave ("sims/app_avoid/figures/timecourse_roc_intent.jpeg")
+ggsave ("sims/app_avoid/figures/timecourse_roc_intent.jpeg", 
+        width = 15, height = 10)
 ```
 
 ## rt distrubition plots ##
@@ -575,7 +578,7 @@ with a violin plot
 ```{r}
 p6.5 <- p4.5 | p6.3
 p6.5 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 #p6.5
 
 ggsave ("sims/app_avoid/figures/timecourse_rt_violin_intent.jpeg")
@@ -586,7 +589,7 @@ with a boxplot
 ```{r}
 p6.6 <- p4.5 | p6.2
 p6.6 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 #p6.6
 
 ggsave ("sims/app_avoid/figures/timecourse_rt_box_intent.jpeg")
@@ -700,9 +703,7 @@ p7.4 <- ggplot(timecourse_task, aes(x = cycle, y = activation, color = response)
   geom_line() +
   ggtitle('Mean response activation by approach-avoid condition') +
   scale_color_brewer(palette = "Dark2") +
-  theme_bw() +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="bottom") +
+  theme(legend.position="bottom") +
   facet_wrap(~task)
 p7.4
 
@@ -714,16 +715,13 @@ and now re-plotted with overlap rather than facet_wrap
 ```{r}
 # legend within the figure
 p7.5 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = task)) + 
-  geom_line(aes(linetype=response)) +
+  geom_line(aes(linetype=response), linewidth = 1.5) +
   # ggtitle('Mean response activation by condition') +
-  scale_color_brewer(palette = "Dark2") +
-  theme_bw() +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position=c(0.8,0.5), legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold"))  
+  scale_color_brewer(palette = "Dark2") 
 p7.5
 
-ggsave ("sims/app_avoid/figures/timecourse_task2_stim.jpeg")
+ggsave ("sims/app_avoid/figures/timecourse_task2_stim.jpeg",
+        width = 7, height = 5)
 ```
 
 
@@ -746,10 +744,8 @@ p8.1 <- ggplot(roc, aes(x = rt, y = acc)) +
   geom_text(x=75, y=0.25, label="mean RT=33.32", colour = "blue", fontface=2) +
   geom_hline(aes(yintercept=rts_acc$mean_acc), colour="red") +
   geom_text(x=75, y=0.95, label="mean accuracy=98", colour = "red", fontface=2) +
-  labs(title = "speed vs. accuracy curve",
-       x = "RT (cycles)", y = "Accuracy (%)") +
-  theme_bw() +
-  xlim(0,200)
+  labs(x = "RT (cycles)", y = "Accuracy (%)") +
+  xlim(0,150)
 p8.1
 
 ggsave ("sims/app_avoid/figures/roc_rt_stim.jpeg")
@@ -763,9 +759,7 @@ p8.2 <- ggplot(roc, aes(x = taskdiff, y = acc)) +
   geom_point(shape=1, size = 3) +
   geom_vline(aes(xintercept=subset(roc, acc >= 0.98)$taskdiff[1]), colour="blue") +
   geom_hline(aes(yintercept=0.98), colour="red") +
-  labs(title = "congruency effect vs. accuracy curve",
-       x = "Congruency Effect (cycles)", y = "Accuracy (%)") +
-  theme_bw()
+  labs(x = "Congruency Effect (cycles)", y = "Accuracy (%)") 
 p8.2
 
 ggsave ("sims/app_avoid/figures/roc_ce_stim.jpeg")
@@ -775,9 +769,11 @@ combined ROC plots
 
 ```{r}
 p8.3 <- p8.1 | p8.2
-p8.3
+p8.3 + plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 30))
 
-ggsave ("sims/app_avoid/figures/roc_stim.jpeg")
+ggsave ("sims/app_avoid/figures/roc_stim.jpeg",
+        width = 10, height = 5)
 ```
 
 ## combine activation and ROC plots ##
@@ -787,10 +783,11 @@ This might be more efficient in a paper.
 ```{r}
 p8.4 <- p7.5 | p8.1 / p8.2
 p8.4 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 # p8.4
 
-ggsave ("sims/app_avoid/figures/timecourse_roc_stim.jpeg")
+ggsave ("sims/app_avoid/figures/timecourse_roc_stim.jpeg",
+        width = 15, height = 10)
 ```
 
 ## rt distrubition plots ##
@@ -865,10 +862,11 @@ with a violin plot
 ```{r}
 p9.5 <- p7.5 | p9.3
 p9.5 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 #p9.5
 
-ggsave ("sims/app_avoid/figures/timecourse_rt_violin_stim.jpeg")
+ggsave ("sims/app_avoid/figures/timecourse_rt_violin_stim.jpeg",
+        width = 15, height = 10)
 ```
 
 with a boxplot
@@ -876,10 +874,11 @@ with a boxplot
 ```{r}
 p9.6 <- p7.5 | p9.2
 p9.6 + plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
+  theme(plot.tag = element_text(size = 30))
 #p9.6
 
-ggsave ("sims/app_avoid/figures/timecourse_rt_box_stim.jpeg")
+ggsave ("sims/app_avoid/figures/timecourse_rt_box_stim.jpeg",
+        width = 15, height = 10)
 ```
 
 ## run a t-test on cycles ##
@@ -946,16 +945,14 @@ plot
 
 ```{r}
 p10.1 <- ggplot(timecourse_task_all, aes(x = cycle, y = activation, colour = task)) + 
-  geom_line(aes(linetype=response)) +
+  geom_line(aes(linetype=response), linewidth = 1.5) +
   scale_color_brewer(palette = "Dark2") +
-  theme_bw() +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position=c(0.55, 0.60), legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold"))+
+  theme(legend.position=c(0.55, 0.60)) +
   facet_wrap(~noise)
 p10.1
 
-ggsave ("sims/app_avoid/figures/timecourse_task_all.jpeg") 
+ggsave ("sims/app_avoid/figures/timecourse_task_all.jpeg",
+        width = 12, height = 7) 
 ```
 
 
@@ -998,6 +995,16 @@ rts_all_summary <- rts_all %>%
 rts_all_summary
 ```
 
+change the theme settings for plotting
+
+```{r}
+theme_set(
+  theme_bw() +
+    theme(text=element_text(size=18, face = "bold"),
+        legend.position="none")
+)
+```
+
 plot
 
 ```{r}
@@ -1007,17 +1014,14 @@ p10.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
   geom_errorbar(data=rts_all_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
-  theme_bw() +
   scale_fill_brewer(palette = "Dark2") +
   scale_y_continuous(limits = c(0, 160)) +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="none", legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold")) +
   ylab("RT (cycles)") +
   facet_wrap(~noise)
 p10.2
 
-ggsave ("sims/app_avoid/figures/rt_cycles_all.jpeg")
+ggsave ("sims/app_avoid/figures/rt_cycles_all.jpeg",
+        width = 5, height = 3)
 ```
 
 # combine plots for cycles and activation across normal and noise conditions #
@@ -1078,17 +1082,14 @@ p11.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
   geom_errorbar(data=rts_all_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
-  theme_bw() +
   scale_fill_brewer(palette = "Dark2") +
   scale_y_continuous(limits = c(0, 150)) +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="none", legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold")) +
   ylab("RT (cycles)") +
   facet_wrap(~noise)
 p11.2
 
-ggsave ("sims/app_avoid/figures/rt_aa_imitate_cycles.jpeg")
+ggsave ("sims/app_avoid/figures/rt_aa_imitate_cycles.jpeg",
+        width = 5, height = 3)
 ```
 
 
@@ -1171,23 +1172,21 @@ p12.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
   geom_errorbar(data=rts_all_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
-  theme_bw() +
   scale_fill_brewer(palette = "Dark2") +
   # scale_y_continuous(limits = c(0, 150)) +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="none", legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold")) +
   ylab("RT (cycles)") +
   facet_wrap(~noise, nrow = 1)
 p12.2
 
-ggsave ("sims/app_avoid/figures/aa_imi_rt_cycles_all.jpeg")
+ggsave ("sims/app_avoid/figures/aa_imi_rt_cycles_all.jpeg",
+        width = 8, height = 5)
 ```
 
 
 ## section 7 ##
 
-plot sims from stim damage (at a lower level than earlier stim damage) plus increased global noise sims.
+plot sims from stim damage (at a lower level than earlier stim damage) plus 
+increased global noise sims.
 
 ## by wrangling and combining dataframes ##
 
@@ -1243,17 +1242,14 @@ p13 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
   geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
   geom_errorbar(data=rts_all_summary, aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=rts_all_summary, aes(y=mean_rt, group=1)) +
-  theme_bw() +
   scale_fill_brewer(palette = "Dark2") +
   # scale_y_continuous(limits = c(0, 150)) +
-  theme(text=element_text(size=18), title=element_text(size=18),
-        legend.position="none", legend.text = element_text(size=10), 
-        legend.title = element_text(size = 10, face = "bold")) +
   ylab("RT (cycles)") +
   facet_wrap(~noise, nrow = 1)
 p13
 
-ggsave ("sims/app_avoid/figures/aa_stim_global_rt_cylces.jpeg")
+ggsave ("sims/app_avoid/figures/aa_stim_global_rt_cylces.jpeg",
+        width = 8, height = 4)
 ```
 
 ## print session info ##
