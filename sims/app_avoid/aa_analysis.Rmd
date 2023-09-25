@@ -25,7 +25,7 @@ There are seven sections.
 
 section 1. basic aa plots. default/baseline settings.
 section 2. intention damage.
-section 3. stim damage.
+section 3. identity damage.
 section 4  plot aa sims together.
 section 5. wrangle and plot imitation sims (with stim component damage)
 section 6. plot aa and imitation sims (with stim component damage) together
@@ -622,7 +622,7 @@ write_csv(timecourse_task, "sims/app_avoid/data/timecourse_task_intent.csv")
 
 ## section 3 ##
 
-## take a look at simulated approach-avoid data when the stimulus aspect of the model is damaged ##
+## take a look at simulated approach-avoid data when the identity aspect of the model is damaged ##
 
 ## read in the data files ##
 
@@ -926,7 +926,7 @@ timecourse_task_intent <- read_csv("sims/app_avoid/data/timecourse_task_intent.c
 head(timecourse_task_intent)
 
 timecourse_task_stim <- read_csv("sims/app_avoid/data/timecourse_task_stim.csv") %>% 
-  mutate(noise = "stimulus")
+  mutate(noise = "identity")
 head(timecourse_task_stim)
 ```
 
@@ -937,7 +937,7 @@ timecourse_task_all <- rbind(timecourse_task_basic, timecourse_task_intent, time
   select(task, response, noise, cycle, activation) %>% # select and re-order
   mutate(task = factor(task, levels = c("congr", "incon")),
          response = factor(response, levels = c("correct", "incorrect")),
-         noise = factor(noise, levels = c("baseline", "stimulus", "intention")))
+         noise = factor(noise, levels = c("baseline", "identity", "intention")))
 head(timecourse_task_all)
 ```
 
@@ -970,7 +970,7 @@ rts_intent <- read_csv("sims/app_avoid/data/rts_intent.csv") %>%
 head(rts_intent)
 
 rts_stim <- read_csv("sims/app_avoid/data/rts_stim.csv") %>% 
-  mutate(noise = "stimulus")
+  mutate(noise = "identity")
 head(rts_stim)
 ```
 
@@ -980,7 +980,7 @@ join them together and create a factor
 rts_all <- rbind(rts, rts_intent, rts_stim) %>%
   select(simno, task, noise, acc, cycle) %>% 
   mutate(task = factor(task, levels = c("congr", "incon")),
-         noise = factor(noise, levels = c("baseline", "stimulus", "intention"))) %>% 
+         noise = factor(noise, levels = c("baseline", "identity", "intention"))) %>% 
   filter(acc==1)
 head(rts_all)
 # summary(rts_all)
@@ -1049,7 +1049,7 @@ rts_aa_imitate <- read_csv("sims/app_avoid/data/rts_aa_imitate.csv") %>%
 head(rts_aa_imitate)
 
 rts_aa_imitate_stim <- read_csv("sims/app_avoid/data/rts_aa_imitate_noisy_faces.csv") %>% 
-  mutate(noise = "stimulus")
+  mutate(noise = "identity")
 head(rts_aa_imitate_stim)
 ```
 
@@ -1059,7 +1059,7 @@ join them together and create a factor
 rts_all <- rbind(rts_aa_imitate, rts_aa_imitate_stim) %>%
   select(simno, task, noise, acc, cycle) %>% 
   mutate(task = factor(task, levels = c("congr", "incon")),
-         noise = factor(noise, levels = c("baseline", "stimulus", "intention"))) %>% 
+         noise = factor(noise, levels = c("baseline", "identity"))) %>% 
   filter(acc==1)
 head(rts_all)
 ```
@@ -1130,7 +1130,7 @@ rts_aa_intent <- read_csv("sims/app_avoid/data/rts_intent.csv") %>%
 head(rts_aa_intent)
 
 rts_aa_stim <- read_csv("sims/app_avoid/data/rts_stim.csv") %>% 
-  mutate(noise = "aa_stimulus")
+  mutate(noise = "aa_identity")
 head(rts_aa_stim)
 
 rts_aa_imitate <- read_csv("sims/app_avoid/data/rts_aa_imitate.csv") %>% 
@@ -1138,7 +1138,7 @@ rts_aa_imitate <- read_csv("sims/app_avoid/data/rts_aa_imitate.csv") %>%
 head(rts_aa_imitate)
 
 rts_aa_imitate_stim <- read_csv("sims/app_avoid/data/rts_aa_imitate_noisy_faces.csv") %>% 
-  mutate(noise = "imi_stimulus")
+  mutate(noise = "imi_identity")
 head(rts_aa_imitate_stim)
 ```
 
@@ -1148,7 +1148,7 @@ join them together and create a factor
 rts_all <- rbind(rts_aa, rts_aa_intent, rts_aa_stim, rts_aa_imitate, rts_aa_imitate_stim) %>%
   select(simno, task, noise, acc, cycle) %>% 
   mutate(task = factor(task, levels = c("congr", "incon")),
-         noise = factor(noise, levels = c("aa_baseline", "aa_stimulus", "aa_intention", "imi_baseline", "imi_stimulus"))) %>% 
+         noise = factor(noise, levels = c("aa_baseline", "aa_identity", "aa_intention", "imi_baseline", "imi_identity"))) %>% 
   filter(acc==1)
 head(rts_all)
 # summary(rts_all)
@@ -1200,7 +1200,7 @@ rts_aa <- read_csv("sims/app_avoid/data/rts_aa_basic.csv") %>%
 head(rts_aa)
 
 rts_aa_stim_10 <- read_csv("sims/app_avoid/data/rts_aa_stim_10.csv") %>% 
-  mutate(noise = "stimulus")
+  mutate(noise = "identity")
 head(rts_aa_stim_10)
 
 rts_aa_global <- read_csv("sims/app_avoid/data/rts_aa_global.csv") %>% 
@@ -1208,7 +1208,7 @@ rts_aa_global <- read_csv("sims/app_avoid/data/rts_aa_global.csv") %>%
 head(rts_aa_global)
 
 rts_aa_stim_global <- read_csv("sims/app_avoid/data/rts_aa_stim_global.csv") %>% 
-  mutate(noise = "stimulus_global")
+  mutate(noise = "combined")
 head(rts_aa_stim_global)
 ```
 
@@ -1218,7 +1218,7 @@ join them together and create a factor
 rts_all <- rbind(rts_aa, rts_aa_stim_10, rts_aa_global, rts_aa_stim_global) %>%
   select(simno, task, noise, acc, cycle) %>% 
   mutate(task = factor(task, levels = c("congr", "incon")),
-         noise = factor(noise, levels = c("baseline", "stimulus", "global", "stimulus_global"))) %>% 
+         noise = factor(noise, levels = c("baseline", "identity", "global", "combined"))) %>% 
   filter(acc==1)
 head(rts_all)
 # summary(rts_all)
