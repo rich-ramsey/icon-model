@@ -2,11 +2,11 @@
 .Rhistory
 .RData
 .Ruserdata
-/data
-/figures
-/summary
-/sandpit
-/older_files
+data/
+figures/
+summary/
+sandpit/
+older_files/
 *.RData
 *.pptx
 *.xlsx
