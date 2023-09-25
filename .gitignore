@@ -2,8 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
-data/
-figures/
-summary/
-sandpit/
+/data
+/figures
+/summary
+/sandpit
+/older_files
 *.RData
