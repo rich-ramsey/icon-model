@@ -8,3 +8,6 @@
 /sandpit
 /older_files
 *.RData
+*.pptx
+*.xlsx
+*.pdf
