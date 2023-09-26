@@ -13,6 +13,9 @@ This is a readme file for the 5x5 ICON model that accompanies the Ward and Ramse
 
 The basic folder structure is as follows.
 
+There is an .Rproj file, which is called '5x5.Rproj'. The '5x5' labels refers to 
+the model space, which is a 5x5 grid.
+
 The **/renv/** folder contains files/folders relevant to package management through
 renv (see here: https://rstudio.github.io/renv/articles/renv.html). 
 
