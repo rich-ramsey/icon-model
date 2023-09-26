@@ -43,7 +43,7 @@ were simulated in the project (i.e., approach-avoid, imitation and visual search
 
 Each of these folders has a similar layout.
 
-First, there are a set of .R files.
+**First, within each simulation folder, there are a set of .R files, including:**
 
 4a. *_task.R
 
@@ -62,16 +62,17 @@ The files analyses the output of the simulations.
 This file creates plots.
 
 
-Note: Within each simulation folder, there may be other variants of these files 
+**Minor note:** Within each simulation folder, there may be other variants of these files 
 (i.e., files 4b, 4c and 4d), which run different simulations or plot different 
 data, but they will all be from one of the above categories and have a similar 
 function e.g., run a sim / analysis / plot.
 
 
-Second, there are two .Rmarkdown files. These RMarkdown files are unnecessary 
-in a functional sense, as all of the sims and analyses can be done with R scripts.
-However, the project has two workflows at play here, so we give folks two 
-different options (see the section below on workflows for more details). 
+**Second, within each simulation folder, there are two .Rmarkdown files.** These 
+RMarkdown files are unnecessary in a functional sense, as all of the sims and 
+analyses can be done with R scripts. However, the project has two workflows at 
+play here, so we give folks two different options (see the section below on 
+workflows for more details). 
 
 4e. *_sim.Rmd
 
