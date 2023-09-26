@@ -109,3 +109,6 @@ whenever you needed to.
 *An example workflow would be:* choose which part/s (i.e., which specific sims) of 
 'sim.Rmd' file that you want to run and execute them. Then use 'analysis.Rmd' to 
 analyse the data that was produced.
+
+The plots in the final manuscript are produced in workflow 2, but the data 
+underlying either workflow would be the same.
