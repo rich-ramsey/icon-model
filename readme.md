@@ -1,4 +1,4 @@
-Readme
+**Readme**
 
 This is a readme file for the 5x5 ICON model that accompanies the Ward and Ramsey paper entitled “An Interactive activation and competition model for the Control Of actioN (ICON)”.
 
