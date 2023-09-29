@@ -1,6 +1,6 @@
 **Readme**
 
-This is a readme file for the 5x5 ICON model that accompanies the Ward and Ramsey paper entitled “An Interactive activation and competition model for the Control Of actioN (ICON)”.
+This is a readme file for the 5x5 ICON model that accompanies the Ward and Ramsey paper entitled “Integrating Social Cognition into Domain-General Control: Interactive activation and competition model for the CONtrol of action (ICON)”.
 
 **Note 1:** If you’re reading this on the OSF, then go to GitHub to get the code (it’s much easier):  https://github.com/rich-ramsey/icon-model.git
 
