@@ -41,19 +41,20 @@ head(roc_imi_basic)
 ```{r}
 # make factors
 rts <- rts_imi_basic %>%
-  mutate(task = factor(task, levels = c("congr", "incon")))
+  rename(condition = task) %>% 
+  mutate(condition = factor(condition, levels = c("congr", "incon")))
 head(rts)
 str(rts)
 
 # summarise accuracy data
 acc_summary <- rts %>%
-  group_by(task) %>%
+  group_by(condition) %>%
   summarise(mean_acc = mean(acc), sd_acc=sd(acc))
 head(acc_summary)
   
 # summarise cycle data
 rts_summary <- rts %>%
-  group_by(task, acc) %>% 
+  group_by(condition, acc) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 head(rts_summary)
 
@@ -77,7 +78,7 @@ activation <- out_imi_basic %>%
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
          "Dfeat_array" = fI32, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
-               names_to = c("condition", "parameter"),
+               names_to = c("object", "parameter"),
                names_sep = 1)  # separate columns based on the first letter
 head(activation)
 ```
@@ -86,9 +87,9 @@ head(activation)
 
 ```{r}
 activation <- activation %>%
-  mutate(condition = factor(condition, levels = c("T", "D")),
+  mutate(object = factor(object, levels = c("T", "D")),
          parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
-  mutate(condition = fct_recode(condition, target = "T", distractor = "D"))
+  mutate(object = fct_recode(object, target = "T", distractor = "D"))
 head(activation)
 ```
 
@@ -96,7 +97,7 @@ head(activation)
 
 ```{r}
 timecourse <- activation %>% 
-  group_by(cycle, condition, parameter) %>% 
+  group_by(cycle, object, parameter) %>% 
   summarise(value = mean(value))
 head(timecourse)
 ```
@@ -127,7 +128,7 @@ p1.1 <- ggplot(timecourse, aes(x = cycle, y = value, color = parameter)) +
   # theme_bw() +
   theme(legend.position="right") +
   ylab("activation") +
-  facet_wrap(~condition)
+  facet_wrap(~object)
 p1.1
 
 ggsave ("sims/imitation/figures/timecourse.jpeg")
@@ -138,7 +139,7 @@ and now re-plotted with overlap rather than facet_wrap
 ```{r}
 # legend within the figure
 p1.2 <- ggplot(timecourse, aes(x = cycle, y = value, colour = parameter)) + 
-  geom_line(aes(linetype=condition)) +
+  geom_line(aes(linetype=object)) +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
   ylab("activation") 
@@ -152,33 +153,35 @@ and now re-plotted with a shorter x-axis and no title with thicker lines
 ```{r}
 # legend within the figure
 p1.3 <- ggplot(timecourse, aes(x = cycle, y = value, colour = parameter)) + 
-  geom_line(aes(linetype=condition), linewidth = 1.5) +
+  geom_line(aes(linetype=object), linewidth = 1.5) +
   # ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
   ylab("activation") +
   theme(legend.position=c(0.8,0.55)) +
   xlim(0, 100) +
-  scale_y_continuous(limits = c(-0.2, 0.65), breaks = seq(-0.2, 0.6, 0.2))
+  scale_y_continuous(limits = c(-0.2, 0.65), breaks = seq(-0.2, 0.6, 0.2)) +
+  guides(linetype = guide_legend(order = 1)) # change the order of the legend
 p1.3
 
 ggsave ("sims/imitation/figures/timecourse2b.jpeg",
         width = 12, height = 7)
 ```
 
-## now plot timecourse as a function of task and accuracy ##
+## now plot timecourse as a function of condition and accuracy ##
 
 wrangle
 
 ```{r}
-timecourse_task <- out_imi_basic %>% 
-  select(task, cycle, correct_resp, incorrect_resp) %>% 
-  group_by(task, cycle) %>%
+timecourse_task <- out_imi_basic %>%
+  rename(condition = task) %>% 
+  select(condition, cycle, correct_resp, incorrect_resp) %>% 
+  group_by(condition, cycle) %>%
   summarise(correct = mean(correct_resp), incorrect = mean(incorrect_resp)) %>%
   pivot_longer(cols = c("correct", "incorrect"),
                names_to = "response", values_to = "activation") %>% 
-  mutate(task = factor(task, levels = c("congr", "incon")),
+  mutate(condition = factor(condition, levels = c("congr", "incon")),
          response = factor(response, levels = c("correct", "incorrect"))) %>% 
-  select(task, response, cycle, activation) # just re-order slightly
+  select(condition, response, cycle, activation) # just re-order slightly
 head(timecourse_task)
 ```
 
@@ -190,7 +193,7 @@ p1.4 <- ggplot(timecourse_task, aes(x = cycle, y = activation, color = response)
   ggtitle('Mean response activation by condition') +
   scale_color_brewer(palette = "Dark2") +
   theme(legend.position="bottom") +
-  facet_wrap(~task)
+  facet_wrap(~condition)
 p1.4
 
 ggsave ("sims/imitation/figures/timecourse_task.jpeg")
@@ -200,7 +203,7 @@ and now re-plotted with overlap rather than facet_wrap
 
 ```{r}
 # legend within the figure
-p1.5 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = task)) + 
+p1.5 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = condition)) + 
   geom_line(aes(linetype=response)) +
   ggtitle('Mean response activation by condition') +
   scale_color_brewer(palette = "Dark2") 
@@ -213,7 +216,7 @@ and now re-plotted with a shorter x-axis and no title
 
 ```{r}
 # legend within the figure
-p1.6 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = task)) + 
+p1.6 <- ggplot(timecourse_task, aes(x = cycle, y = activation, colour = condition)) + 
   geom_line(aes(linetype=response), linewidth = 1.5) +
   # ggtitle('Mean response activation by condition') +
   scale_color_brewer(palette = "Dark2") +
@@ -228,7 +231,7 @@ ggsave ("sims/imitation/figures/timecourse_task2b.jpeg",
 combine timecourse plots
 
 ```{r}
-p1.7 <- p1.3 | p1.6
+p1.7 <- p1.6 | p1.3
 p1.7 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(size = 30))
 
@@ -327,7 +330,7 @@ ggsave ("sims/imitation/figures/timecourse_roc_b2.jpeg", width = 15, height = 10
 density
 
 ```{r}
-p3.1 <- ggplot(rts, aes(x = cycle, colour = task)) +
+p3.1 <- ggplot(rts, aes(x = cycle, colour = condition)) +
   geom_density() +
   theme_bw() +
   scale_colour_brewer(palette = "Dark2")
@@ -338,7 +341,8 @@ boxplot
 
 ```{r}
 # with acc=1
-p3.2 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p3.2 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, 
+                                        fill = condition)) +
   geom_boxplot() +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2")
@@ -349,7 +353,8 @@ violin plot
 
 ```{r}
 # with acc=1
-p3.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p3.3 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, 
+                                        fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
@@ -362,7 +367,7 @@ p3.3
 ggsave ("sims/imitation/figures/rt_cycles.jpeg")
 
 # split by acc (if necessary)
-p3.3b <- ggplot(rts, aes(x = task, y = cycle, fill = task)) +
+p3.3b <- ggplot(rts, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_summary, aes(y=mean_rt), size =3) +
@@ -390,8 +395,8 @@ ggsave ("sims/imitation/figures/rt_dist.jpeg")
 I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
 
 ```{r}
-t_test_cycle <- t.test(subset(rts, task=='incon' & acc == 1)$cycle, 
-       subset(rts, task == 'congr' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle <- t.test(subset(rts, condition=='incon' & acc == 1)$cycle, 
+       subset(rts, condition == 'congr' & acc == 1)$cycle, paired = FALSE) 
 t_test_cycle
 
 # tidy the output with broom
@@ -431,19 +436,20 @@ head(roc_imi_hi)
 ```{r}
 # make factors
 rts_hi <- rts_imi_hi %>%
-  mutate(task = factor(task, levels = c("congr", "incon")))
+  rename(condition = task) %>% 
+  mutate(condition = factor(condition, levels = c("congr", "incon")))
 head(rts_hi)
 str(rts_hi)
 
 # summarise accuracy data
 acc_summary_hi <- rts_hi %>%
-  group_by(task) %>%
+  group_by(condition) %>%
   summarise(mean_acc = mean(acc), sd_acc=sd(acc))
 head(acc_summary_hi)
   
 # summarise cycle data
 rts_summary_hi <- rts_hi %>%
-  group_by(task, acc) %>% 
+  group_by(condition, acc) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 head(rts_summary_hi)
 
@@ -467,7 +473,7 @@ activation_hi <- out_imi_hi %>%
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
          "Dfeat_array" = fI32, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
-               names_to = c("condition", "parameter"),
+               names_to = c("object", "parameter"),
                names_sep = 1)  # separate columns based on the first letter
 head(activation_hi)
 ```
@@ -476,9 +482,9 @@ head(activation_hi)
 
 ```{r}
 activation_hi <- activation_hi %>%
-  mutate(condition = factor(condition, levels = c("T", "D")),
+  mutate(object = factor(object, levels = c("T", "D")),
          parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
-  mutate(condition = fct_recode(condition, target = "T", distractor = "D"))
+  mutate(object = fct_recode(object, target = "T", distractor = "D"))
 head(activation_hi)
 ```
 
@@ -486,7 +492,7 @@ head(activation_hi)
 
 ```{r}
 timecourse_hi <- activation_hi %>% 
-  group_by(cycle, condition, parameter) %>% 
+  group_by(cycle, object, parameter) %>% 
   summarise(value = mean(value))
 head(timecourse_hi)
 ```
@@ -502,7 +508,7 @@ p4.1 <- ggplot(timecourse_hi, aes(x = cycle, y = value, color = parameter)) +
   scale_color_brewer(palette = "Dark2") +
   theme(legend.position="right") +
   ylab("activation") +
-  facet_wrap(~condition)
+  facet_wrap(~object)
 p4.1
 
 ggsave ("sims/imitation/figures/timecourse_hi.jpeg")
@@ -513,7 +519,7 @@ and now re-plotted with overlap rather than facet_wrap
 ```{r}
 # legend within the figure
 p4.2 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = parameter)) + 
-  geom_line(aes(linetype=condition)) +
+  geom_line(aes(linetype=object)) +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
   theme(legend.position=c(0.8,0.5))
@@ -527,10 +533,11 @@ and now re-plotted with a shorter x-axis and with noi title and thicker lines
 ```{r}
 # legend within the figure
 p4.3 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = parameter)) + 
-  geom_line(aes(linetype=condition), linewidth = 1.5) +
+  geom_line(aes(linetype=object), linewidth = 1.5) +
   # ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
-  xlim(0, 100)
+  xlim(0, 100) +
+  guides(linetype = guide_legend(order = 1)) # change the order of the legend
 p4.3
 
 ggsave ("sims/imitation/figures/timecourse2b_hi.jpeg")
@@ -594,7 +601,7 @@ ggsave ("sims/imitation/figures/roc_hi.jpeg",
 density
 
 ```{r}
-p6.1 <- ggplot(rts_hi, aes(x = cycle, colour = task)) +
+p6.1 <- ggplot(rts_hi, aes(x = cycle, colour = condition)) +
   geom_density() +
   theme_bw() +
   scale_colour_brewer(palette = "Dark2")
@@ -605,7 +612,8 @@ boxplot
 
 ```{r}
 # with acc=1
-p6.2 <- ggplot(subset(rts_hi, acc==1), aes(x = task, y = cycle, fill = task)) +
+p6.2 <- ggplot(subset(rts_hi, acc==1), aes(x = condition, y = cycle, 
+                                           fill = condition)) +
   geom_boxplot() +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2")
@@ -616,11 +624,14 @@ violin plot
 
 ```{r}
 # with acc=1
-p6.3 <- ggplot(subset(rts_hi, acc==1), aes(x = task, y = cycle, fill = task)) +
+p6.3 <- ggplot(subset(rts_hi, acc==1), aes(x = condition, y = cycle, 
+                                           fill = condition)) +
   geom_violin() +
-  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
+  geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, 
+              colour = "darkgrey") +
   geom_point(data=subset(rts_summary_hi, acc==1), aes(y=mean_rt), size =3) +
-  geom_errorbar(data=subset(rts_summary_hi, acc==1), aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
+  geom_errorbar(data=subset(rts_summary_hi, acc==1), 
+                aes(y = mean_rt, ymin=mean_rt-sem, ymax=mean_rt+sem), width=.2) +
   geom_line(data=subset(rts_summary_hi, acc==1), aes(y=mean_rt, group=1)) +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2") 
@@ -629,7 +640,7 @@ p6.3
 ggsave ("sims/imitation/figures/rt_cycles_hi.jpeg")
 
 # split by acc (if necessary)
-p6.3b <- ggplot(rts_hi, aes(x = task, y = cycle, fill = task)) +
+p6.3b <- ggplot(rts_hi, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_summary_hi, aes(y=mean_rt), size =3) +
@@ -657,8 +668,8 @@ ggsave ("sims/imitation/figures/rt_dist_hi.jpeg")
 I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
 
 ```{r}
-t_test_cycle_hi <- t.test(subset(rts_hi, task=='incon' & acc == 1)$cycle, 
-       subset(rts_hi, task == 'congr' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle_hi <- t.test(subset(rts_hi, condition=='incon' & acc == 1)$cycle, 
+       subset(rts_hi, condition == 'congr' & acc == 1)$cycle, paired = FALSE) 
 t_test_cycle_hi
 
 # tidy the output with broom
@@ -699,19 +710,20 @@ head(roc_imi_lo)
 ```{r}
 # make factors
 rts_lo <- rts_imi_lo %>%
-  mutate(task = factor(task, levels = c("congr", "incon")))
+  rename(condition = task) %>% 
+  mutate(condition = factor(condition, levels = c("congr", "incon")))
 head(rts_lo)
 str(rts_lo)
 
 # summarise accuracy data
 acc_summary_lo <- rts_lo %>%
-  group_by(task) %>%
+  group_by(condition) %>%
   summarise(mean_acc = mean(acc), sd_acc=sd(acc))
 head(acc_summary_lo)
   
 # summarise cycle data
 rts_summary_lo <- rts_lo %>%
-  group_by(task, acc) %>% 
+  group_by(condition, acc) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 head(rts_summary_lo)
 
@@ -735,7 +747,7 @@ activation_lo <- out_imi_lo %>%
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
          "Dfeat_array" = fI32, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
-               names_to = c("condition", "parameter"),
+               names_to = c("object", "parameter"),
                names_sep = 1)  # separate columns based on the first letter
 head(activation_lo)
 ```
@@ -744,9 +756,9 @@ head(activation_lo)
 
 ```{r}
 activation_lo <- activation_lo %>%
-  mutate(condition = factor(condition, levels = c("T", "D")),
+  mutate(object = factor(object, levels = c("T", "D")),
          parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
-  mutate(condition = fct_recode(condition, target = "T", distractor = "D"))
+  mutate(object = fct_recode(object, target = "T", distractor = "D"))
 head(activation_lo)
 ```
 
@@ -754,7 +766,7 @@ head(activation_lo)
 
 ```{r}
 timecourse_lo <- activation_lo %>% 
-  group_by(cycle, condition, parameter) %>% 
+  group_by(cycle, object, parameter) %>% 
   summarise(value = mean(value))
 head(timecourse_lo)
 ```
@@ -770,7 +782,7 @@ p7.1 <- ggplot(timecourse_lo, aes(x = cycle, y = value, color = parameter)) +
   scale_color_brewer(palette = "Dark2") +
   theme(legend.position="right") +
   ylab("activation") +
-  facet_wrap(~condition)
+  facet_wrap(~object)
 p7.1
 
 ggsave ("sims/imitation/figures/timecourse_lo.jpeg")
@@ -781,7 +793,7 @@ and now re-plotted with overlap rather than facet_wrap
 ```{r}
 # legend within the figure
 p7.2 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = parameter)) + 
-  geom_line(aes(linetype=condition)) +
+  geom_line(aes(linetype=object)) +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") 
 p7.2
@@ -794,10 +806,11 @@ and now re-plotted with a shorter x-axis
 ```{r}
 # legend within the figure
 p7.3 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = parameter)) + 
-  geom_line(aes(linetype=condition), linewidth = 1.5) +
+  geom_line(aes(linetype=object), linewidth = 1.5) +
   # ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
-  xlim(0, 100)
+  xlim(0, 100) +
+  guides(linetype = guide_legend(order = 1)) # change the order of the legend
 p7.3
 
 ggsave ("sims/imitation/figures/timecourse2b_lo.jpeg")
@@ -862,7 +875,7 @@ ggsave ("sims/imitation/figures/roc_lo.jpeg",
 density
 
 ```{r}
-p9.1 <- ggplot(rts_lo, aes(x = cycle, colour = task)) +
+p9.1 <- ggplot(rts_lo, aes(x = cycle, colour = condition)) +
   geom_density() +
   theme_bw() +
   scale_colour_brewer(palette = "Dark2")
@@ -873,7 +886,7 @@ boxplot
 
 ```{r}
 # with acc=1
-p9.2 <- ggplot(subset(rts_lo, acc==1), aes(x = task, y = cycle, fill = task)) +
+p9.2 <- ggplot(subset(rts_lo, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_boxplot() +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2")
@@ -884,7 +897,7 @@ violin plot
 
 ```{r}
 # with acc=1
-p9.3 <- ggplot(subset(rts_lo, acc==1), aes(x = task, y = cycle, fill = task)) +
+p9.3 <- ggplot(subset(rts_lo, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=subset(rts_summary_lo, acc==1), aes(y=mean_rt), size =3) +
@@ -897,7 +910,7 @@ p9.3
 ggsave ("sims/imitation/figures/rt_cycles_lo.jpeg")
 
 # split by acc (if necessary)
-p9.3b <- ggplot(rts_lo, aes(x = task, y = cycle, fill = task)) +
+p9.3b <- ggplot(rts_lo, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_summary_lo, aes(y=mean_rt), size =3) +
@@ -925,8 +938,8 @@ ggsave ("sims/imitation/figures/rt_dist_lo.jpeg")
 I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
 
 ```{r}
-t_test_cycle_lo <- t.test(subset(rts_lo, task=='incon' & acc == 1)$cycle, 
-       subset(rts_lo, task == 'congr' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle_lo <- t.test(subset(rts_lo, condition=='incon' & acc == 1)$cycle, 
+       subset(rts_lo, condition == 'congr' & acc == 1)$cycle, paired = FALSE) 
 t_test_cycle_lo
 
 # tidy the output with broom
@@ -976,8 +989,8 @@ join them together and create a factor
 
 ```{r}
 timecourse_all <- rbind(timecourse, timecourse_hi, timecourse_lo) %>%
-  select(cycle, condition, parameter, bias, value) %>% 
-  mutate(condition = factor(condition, levels = c("target", "distractor")),
+  select(cycle, object, parameter, bias, value) %>% 
+  mutate(object = factor(object, levels = c("target", "distractor")),
          parameter = factor(parameter, levels = c("feat_array", "salience", "identity")),
          bias = factor(bias, levels = c("baseline", "high", "low")))
 head(timecourse_all)
@@ -987,12 +1000,13 @@ plot
 
 ```{r}
 p10.1 <- ggplot(timecourse_all, aes(x = cycle, y = value, colour = parameter)) + 
-  geom_line(aes(linetype=condition), linewidth = 1.5) +
+  geom_line(aes(linetype=object), linewidth = 1.5) +
   scale_color_brewer(palette = "Dark2") +
   # theme_bw() +
   theme(legend.position=c(0.55, 0.60)) +
   ylab("activation") +
-  facet_wrap(~bias)
+  facet_wrap(~bias) +
+  guides(linetype = guide_legend(order = 1)) # change the order of the legend
 p10.1
 
 ggsave ("sims/imitation/figures/timecourse_all.jpeg",
@@ -1022,8 +1036,8 @@ join them together and create a factor
 
 ```{r}
 rts_all <- rbind(rts, rts_hi, rts_lo) %>%
-  select(simno, task, bias, acc, cycle) %>% 
-  mutate(task = factor(task, levels = c("congr", "incon")),
+  select(simno, condition, bias, acc, cycle) %>% 
+  mutate(condition = factor(condition, levels = c("congr", "incon")),
          bias = factor(bias, levels = c("baseline", "high", "low"))) %>% 
   filter(acc==1)
 head(rts_all)
@@ -1033,7 +1047,7 @@ create summary data
 
 ```{r}
 rts_all_summary <- rts_all %>%
-  group_by(task, bias) %>% 
+  group_by(condition, bias) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 rts_all_summary
 ```
@@ -1051,7 +1065,7 @@ theme_set(
 plot
 
 ```{r}
-p10.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
+p10.2 <- ggplot(rts_all, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_all_summary, aes(y=mean_rt), size =2) +

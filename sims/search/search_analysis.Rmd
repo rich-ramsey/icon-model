@@ -41,19 +41,20 @@ head(roc_search_basic)
 ```{r}
 # make factors
 rts <- rts_search_basic %>%
-  mutate(task = factor(task, levels = c("3", "10")))
+  rename(condition = task) %>% 
+  mutate(condition = factor(condition, levels = c("3", "10")))
 head(rts)
 str(rts)
 
 # summarise accuracy data
 acc_summary <- rts %>%
-  group_by(task) %>%
+  group_by(condition) %>%
   summarise(mean_acc = mean(acc), sd_acc=sd(acc))
 head(acc_summary)
   
 # summarise cycle data
 rts_summary <- rts %>%
-  group_by(task, acc) %>% 
+  group_by(condition, acc) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 head(rts_summary)
 
@@ -165,7 +166,7 @@ ggsave ("sims/search/figures/roc_rt.jpeg")
 density
 
 ```{r}
-p3.1 <- ggplot(rts, aes(x = cycle, colour = task)) +
+p3.1 <- ggplot(rts, aes(x = cycle, colour = condition)) +
   geom_density() +
   theme_bw() +
   scale_colour_brewer(palette = "Dark2")
@@ -176,7 +177,7 @@ boxplot
 
 ```{r}
 # with acc=1
-p3.2 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p3.2 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_boxplot() +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2")
@@ -187,7 +188,7 @@ violin plot
 
 ```{r}
 # with acc=1
-p3.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p3.3 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
@@ -200,7 +201,7 @@ p3.3
 ggsave ("sims/search/figures/rt_cycles.jpeg")
 
 # split by acc (if necessary)
-p3.3b <- ggplot(rts, aes(x = task, y = cycle, fill = task)) +
+p3.3b <- ggplot(rts, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_summary, aes(y=mean_rt), size =3) +
@@ -254,8 +255,8 @@ with a boxplot
 I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
 
 ```{r}
-t_test_cycle <- t.test(subset(rts, task=='10' & acc == 1)$cycle, 
-       subset(rts, task == '3' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle <- t.test(subset(rts, condition=='10' & acc == 1)$cycle, 
+       subset(rts, condition == '3' & acc == 1)$cycle, paired = FALSE) 
 t_test_cycle
 
 # tidy the output with broom
@@ -297,19 +298,20 @@ head(roc_search_easy)
 ```{r}
 # make factors
 rts <- rts_search_easy %>%
-  mutate(task = factor(task, levels = c("3", "10")))
+  rename(condition = task) %>% 
+  mutate(condition = factor(condition, levels = c("3", "10")))
 head(rts)
 str(rts)
 
 # summarise accuracy data
 acc_summary <- rts %>%
-  group_by(task) %>%
+  group_by(condition) %>%
   summarise(mean_acc = mean(acc), sd_acc=sd(acc))
 head(acc_summary)
   
 # summarise cycle data
 rts_summary <- rts %>%
-  group_by(task, acc) %>% 
+  group_by(condition, acc) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 head(rts_summary)
 
@@ -410,7 +412,7 @@ ggsave ("sims/search/figures/roc_rt_easy.jpeg")
 density
 
 ```{r}
-p6.1 <- ggplot(rts, aes(x = cycle, colour = task)) +
+p6.1 <- ggplot(rts, aes(x = cycle, colour = condition)) +
   geom_density() +
   theme_bw() +
   scale_colour_brewer(palette = "Dark2")
@@ -421,7 +423,7 @@ boxplot
 
 ```{r}
 # with acc=1
-p6.2 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p6.2 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_boxplot() +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2")
@@ -432,7 +434,7 @@ violin plot
 
 ```{r}
 # with acc=1
-p6.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p6.3 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
@@ -445,7 +447,7 @@ p6.3
 ggsave ("sims/search/figures/rt_cycles_easy.jpeg")
 
 # split by acc (if necessary)
-p6.3b <- ggplot(rts, aes(x = task, y = cycle, fill = task)) +
+p6.3b <- ggplot(rts, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_summary, aes(y=mean_rt), size =3) +
@@ -499,8 +501,8 @@ with a boxplot
 I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
 
 ```{r}
-t_test_cycle <- t.test(subset(rts, task=='10' & acc == 1)$cycle, 
-       subset(rts, task == '3' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle <- t.test(subset(rts, condition=='10' & acc == 1)$cycle, 
+       subset(rts, condition == '3' & acc == 1)$cycle, paired = FALSE) 
 t_test_cycle
 
 # tidy the output with broom
@@ -542,19 +544,20 @@ head(roc_search_hard)
 ```{r}
 # make factors
 rts <- rts_search_hard %>%
-  mutate(task = factor(task, levels = c("3", "10")))
+  rename(condition = task) %>% 
+  mutate(condition = factor(condition, levels = c("3", "10")))
 head(rts)
 str(rts)
 
 # summarise accuracy data
 acc_summary <- rts %>%
-  group_by(task) %>%
+  group_by(condition) %>%
   summarise(mean_acc = mean(acc), sd_acc=sd(acc))
 head(acc_summary)
   
 # summarise cycle data
 rts_summary <- rts %>%
-  group_by(task, acc) %>% 
+  group_by(condition, acc) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 head(rts_summary)
 
@@ -655,7 +658,7 @@ ggsave ("sims/search/figures/roc_rt_hard.jpeg")
 density
 
 ```{r}
-p9.1 <- ggplot(rts, aes(x = cycle, colour = task)) +
+p9.1 <- ggplot(rts, aes(x = cycle, colour = condition)) +
   geom_density() +
   theme_bw() +
   scale_colour_brewer(palette = "Dark2")
@@ -666,7 +669,7 @@ boxplot
 
 ```{r}
 # with acc=1
-p9.2 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p9.2 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_boxplot() +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2")
@@ -677,7 +680,7 @@ violin plot
 
 ```{r}
 # with acc=1
-p9.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p9.3 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
@@ -690,7 +693,7 @@ p9.3
 ggsave ("sims/search/figures/rt_cycles_hard.jpeg")
 
 # split by acc (if necessary)
-p9.3b <- ggplot(rts, aes(x = task, y = cycle, fill = task)) +
+p9.3b <- ggplot(rts, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_summary, aes(y=mean_rt), size =3) +
@@ -744,8 +747,8 @@ with a boxplot
 I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
 
 ```{r}
-t_test_cycle <- t.test(subset(rts, task=='10' & acc == 1)$cycle, 
-       subset(rts, task == '3' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle <- t.test(subset(rts, condition=='10' & acc == 1)$cycle, 
+       subset(rts, condition == '3' & acc == 1)$cycle, paired = FALSE) 
 t_test_cycle
 
 # tidy the output with broom
@@ -824,19 +827,20 @@ write_csv(rt_data[[2]], "sims/search/data/roc_search_hard_85.csv")
 ```{r}
 # make factors
 rts <- rts_search_hard_85 %>%
-  mutate(task = factor(task, levels = c("3", "10")))
+  rename(condition = task) %>% 
+  mutate(condition = factor(condition, levels = c("3", "10")))
 head(rts)
 str(rts)
 
 # summarise accuracy data
 acc_summary <- rts %>%
-  group_by(task) %>%
+  group_by(condition) %>%
   summarise(mean_acc = mean(acc), sd_acc=sd(acc))
 head(acc_summary)
   
 # summarise cycle data
 rts_summary <- rts %>%
-  group_by(task, acc) %>% 
+  group_by(condition, acc) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 head(rts_summary)
 
@@ -937,7 +941,7 @@ ggsave ("sims/search/figures/roc_rt_hard_85.jpeg")
 density
 
 ```{r}
-p12.1 <- ggplot(rts, aes(x = cycle, colour = task)) +
+p12.1 <- ggplot(rts, aes(x = cycle, colour = condition)) +
   geom_density() +
   theme_bw() +
   scale_colour_brewer(palette = "Dark2")
@@ -948,7 +952,7 @@ boxplot
 
 ```{r}
 # with acc=1
-p12.2 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p12.2 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_boxplot() +
   theme_bw() +
   scale_fill_brewer(palette = "Dark2")
@@ -959,7 +963,7 @@ violin plot
 
 ```{r}
 # with acc=1
-p12.3 <- ggplot(subset(rts, acc==1), aes(x = task, y = cycle, fill = task)) +
+p12.3 <- ggplot(subset(rts, acc==1), aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=subset(rts_summary, acc==1), aes(y=mean_rt), size =3) +
@@ -972,7 +976,7 @@ p12.3
 ggsave ("sims/search/figures/rt_cycles_hard_85.jpeg")
 
 # split by acc (if necessary)
-p12.3b <- ggplot(rts, aes(x = task, y = cycle, fill = task)) +
+p12.3b <- ggplot(rts, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_summary, aes(y=mean_rt), size =3) +
@@ -1026,8 +1030,8 @@ with a boxplot
 I'm not sure we need this tbh?? The plots look good enough to me. But it is here if that's what you want.
 
 ```{r}
-t_test_cycle <- t.test(subset(rts, task=='10' & acc == 1)$cycle, 
-       subset(rts, task == '3' & acc == 1)$cycle, paired = FALSE) 
+t_test_cycle <- t.test(subset(rts, condition=='10' & acc == 1)$cycle, 
+       subset(rts, condition == '3' & acc == 1)$cycle, paired = FALSE) 
 t_test_cycle
 
 # tidy the output with broom
@@ -1083,8 +1087,8 @@ join them together and create a factor
 
 ```{r}
 rts_all <- rbind(rts_base, rts_easy, rts_hard, rts_hard_85) %>%
-  select(simno, task, difficulty, acc, cycle) %>% 
-  mutate(task = factor(task, levels = c("3", "10")),
+  select(simno, condition, difficulty, acc, cycle) %>% 
+  mutate(condition = factor(condition, levels = c("3", "10")),
          difficulty = factor(difficulty, levels = c("baseline", "easy", "hard_high_criterion", "hard_low_criterion"))) %>% 
   filter(acc==1)
 head(rts_all)
@@ -1095,7 +1099,7 @@ create summary data
 
 ```{r}
 rts_all_summary <- rts_all %>%
-  group_by(task, difficulty) %>% 
+  group_by(condition, difficulty) %>% 
   summarise(mean_rt=mean(cycle), sd=sd(cycle), n=n(), sem=sd/sqrt(n)) 
 rts_all_summary
 ```
@@ -1113,7 +1117,7 @@ theme_set(
 plot
 
 ```{r}
-p13.2 <- ggplot(rts_all, aes(x = task, y = cycle, fill = task)) +
+p13.2 <- ggplot(rts_all, aes(x = condition, y = cycle, fill = condition)) +
   geom_violin() +
   geom_jitter(position=position_jitterdodge(dodge.width =1), alpha = 0.8, colour = "darkgrey") +
   geom_point(data=rts_all_summary, aes(y=mean_rt), size =3) +
