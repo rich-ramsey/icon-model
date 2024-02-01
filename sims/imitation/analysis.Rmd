@@ -69,7 +69,7 @@ rts_acc <- rts %>%
 head(rts_acc)
 ```
 
-## look at the activation timecourse across parameters and conditions ##
+## look at the activation timecourse across modules and conditions ##
 
 ## select relevant variables to plot ##
 
@@ -78,7 +78,7 @@ activation <- out_imi_basic %>%
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
          "Dfeat_array" = fI32, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
-               names_to = c("object", "parameter"),
+               names_to = c("object", "module"),
                names_sep = 1)  # separate columns based on the first letter
 head(activation)
 ```
@@ -88,7 +88,8 @@ head(activation)
 ```{r}
 activation <- activation %>%
   mutate(object = factor(object, levels = c("T", "D")),
-         parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
+         module = factor(module, 
+                         levels = c("feat_array", "salience", "identity"))) %>% 
   mutate(object = fct_recode(object, target = "T", distractor = "D"))
 head(activation)
 ```
@@ -97,7 +98,7 @@ head(activation)
 
 ```{r}
 timecourse <- activation %>% 
-  group_by(cycle, object, parameter) %>% 
+  group_by(cycle, object, module) %>% 
   summarise(value = mean(value))
 head(timecourse)
 ```
@@ -121,7 +122,7 @@ theme_set(
 plot
 
 ```{r}
-p1.1 <- ggplot(timecourse, aes(x = cycle, y = value, color = parameter)) + 
+p1.1 <- ggplot(timecourse, aes(x = cycle, y = value, color = module)) + 
   geom_line() +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -138,7 +139,7 @@ and now re-plotted with overlap rather than facet_wrap
 
 ```{r}
 # legend within the figure
-p1.2 <- ggplot(timecourse, aes(x = cycle, y = value, colour = parameter)) + 
+p1.2 <- ggplot(timecourse, aes(x = cycle, y = value, colour = module)) + 
   geom_line(aes(linetype=object)) +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -152,7 +153,7 @@ and now re-plotted with a shorter x-axis and no title with thicker lines
 
 ```{r}
 # legend within the figure
-p1.3 <- ggplot(timecourse, aes(x = cycle, y = value, colour = parameter)) + 
+p1.3 <- ggplot(timecourse, aes(x = cycle, y = value, colour = module)) + 
   geom_line(aes(linetype=object), linewidth = 1.5) +
   # ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -325,7 +326,7 @@ p2.6 + plot_annotation(tag_levels = 'A') &
 ggsave ("sims/imitation/figures/timecourse_roc_b2.jpeg", width = 15, height = 10)
 ```
 
-## rt distrubition plots ##
+## rt distribution plots ##
 
 density
 
@@ -464,7 +465,7 @@ rts_acc_hi <- rts_hi %>%
 head(rts_acc_hi)
 ```
 
-## look at the activation timecourse across parameters and conditions ##
+## look at the activation timecourse across modules and conditions ##
 
 ## select relevant variables to plot ##
 
@@ -473,7 +474,7 @@ activation_hi <- out_imi_hi %>%
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
          "Dfeat_array" = fI32, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
-               names_to = c("object", "parameter"),
+               names_to = c("object", "module"),
                names_sep = 1)  # separate columns based on the first letter
 head(activation_hi)
 ```
@@ -483,7 +484,8 @@ head(activation_hi)
 ```{r}
 activation_hi <- activation_hi %>%
   mutate(object = factor(object, levels = c("T", "D")),
-         parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
+         module = factor(module, 
+                            levels = c("feat_array", "salience", "identity"))) %>% 
   mutate(object = fct_recode(object, target = "T", distractor = "D"))
 head(activation_hi)
 ```
@@ -492,7 +494,7 @@ head(activation_hi)
 
 ```{r}
 timecourse_hi <- activation_hi %>% 
-  group_by(cycle, object, parameter) %>% 
+  group_by(cycle, object, module) %>% 
   summarise(value = mean(value))
 head(timecourse_hi)
 ```
@@ -502,7 +504,7 @@ head(timecourse_hi)
 We are plotting the timecourse for the basic imitation task (E1), looking at the average for all trials. We include relevant columns to show an object-oriented selection e.g., target vs distractor.
 
 ```{r}
-p4.1 <- ggplot(timecourse_hi, aes(x = cycle, y = value, color = parameter)) + 
+p4.1 <- ggplot(timecourse_hi, aes(x = cycle, y = value, color = module)) + 
   geom_line() +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -518,7 +520,7 @@ and now re-plotted with overlap rather than facet_wrap
 
 ```{r}
 # legend within the figure
-p4.2 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = parameter)) + 
+p4.2 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = module)) + 
   geom_line(aes(linetype=object)) +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -532,7 +534,7 @@ and now re-plotted with a shorter x-axis and with noi title and thicker lines
 
 ```{r}
 # legend within the figure
-p4.3 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = parameter)) + 
+p4.3 <- ggplot(timecourse_hi, aes(x = cycle, y = value, colour = module)) + 
   geom_line(aes(linetype=object), linewidth = 1.5) +
   # ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -738,7 +740,7 @@ rts_acc_lo <- rts_lo %>%
 head(rts_acc_lo)
 ```
 
-## look at the activation timecourse across parameters and conditions ##
+## look at the activation timecourse across modules and conditions ##
 
 ## select relevant variables to plot ##
 
@@ -747,7 +749,7 @@ activation_lo <- out_imi_lo %>%
   select(cycle, "Tfeat_array" = fA33, "Tsalience" = s33, "Tidentity" = fA,
          "Dfeat_array" = fI32, "Dsalience" = s32, "Didentity" = fI) %>% 
   pivot_longer(-cycle,
-               names_to = c("object", "parameter"),
+               names_to = c("object", "module"),
                names_sep = 1)  # separate columns based on the first letter
 head(activation_lo)
 ```
@@ -757,7 +759,8 @@ head(activation_lo)
 ```{r}
 activation_lo <- activation_lo %>%
   mutate(object = factor(object, levels = c("T", "D")),
-         parameter = factor(parameter, levels = c("feat_array", "salience", "identity"))) %>% 
+         module = factor(module, 
+                         levels = c("feat_array", "salience", "identity"))) %>% 
   mutate(object = fct_recode(object, target = "T", distractor = "D"))
 head(activation_lo)
 ```
@@ -766,7 +769,7 @@ head(activation_lo)
 
 ```{r}
 timecourse_lo <- activation_lo %>% 
-  group_by(cycle, object, parameter) %>% 
+  group_by(cycle, object, module) %>% 
   summarise(value = mean(value))
 head(timecourse_lo)
 ```
@@ -776,7 +779,7 @@ head(timecourse_lo)
 We are plotting the timecourse for the basic imitation task (E1), looking at the average for all trials. We include relevant columns to show an object-oriented selection e.g., target vs distractor.
 
 ```{r}
-p7.1 <- ggplot(timecourse_lo, aes(x = cycle, y = value, color = parameter)) + 
+p7.1 <- ggplot(timecourse_lo, aes(x = cycle, y = value, color = module)) + 
   geom_line() +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -792,7 +795,7 @@ and now re-plotted with overlap rather than facet_wrap
 
 ```{r}
 # legend within the figure
-p7.2 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = parameter)) + 
+p7.2 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = module)) + 
   geom_line(aes(linetype=object)) +
   ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") 
@@ -805,7 +808,7 @@ and now re-plotted with a shorter x-axis
 
 ```{r}
 # legend within the figure
-p7.3 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = parameter)) + 
+p7.3 <- ggplot(timecourse_lo, aes(x = cycle, y = value, colour = module)) + 
   geom_line(aes(linetype=object), linewidth = 1.5) +
   # ggtitle('Mean response activation') +
   scale_color_brewer(palette = "Dark2") +
@@ -989,9 +992,9 @@ join them together and create a factor
 
 ```{r}
 timecourse_all <- rbind(timecourse, timecourse_hi, timecourse_lo) %>%
-  select(cycle, object, parameter, bias, value) %>% 
+  select(cycle, object, module, bias, value) %>% 
   mutate(object = factor(object, levels = c("target", "distractor")),
-         parameter = factor(parameter, levels = c("feat_array", "salience", "identity")),
+         module = factor(module, levels = c("feat_array", "salience", "identity")),
          bias = factor(bias, levels = c("baseline", "high", "low")))
 head(timecourse_all)
 ```
@@ -999,7 +1002,7 @@ head(timecourse_all)
 plot
 
 ```{r}
-p10.1 <- ggplot(timecourse_all, aes(x = cycle, y = value, colour = parameter)) + 
+p10.1 <- ggplot(timecourse_all, aes(x = cycle, y = value, colour = module)) + 
   geom_line(aes(linetype=object), linewidth = 1.5) +
   scale_color_brewer(palette = "Dark2") +
   # theme_bw() +

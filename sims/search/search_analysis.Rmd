@@ -69,7 +69,7 @@ rts_acc <- rts %>%
 head(rts_acc)
 ```
 
-## look at the activation timecourse across parameters and conditions ##
+## look at the activation timecourse across modules and conditions ##
 
 ## select relevant variables to plot ##
 
@@ -326,7 +326,7 @@ rts_acc <- rts %>%
 head(rts_acc)
 ```
 
-## look at the activation timecourse across parameters and conditions ##
+## look at the activation timecourse across modules and conditions ##
 
 ## select relevant variables to plot ##
 
@@ -572,7 +572,7 @@ rts_acc <- rts %>%
 head(rts_acc)
 ```
 
-## look at the activation timecourse across parameters and conditions ##
+## look at the activation timecourse across modules and conditions ##
 
 ## select relevant variables to plot ##
 
@@ -855,7 +855,7 @@ rts_acc <- rts %>%
 head(rts_acc)
 ```
 
-## look at the activation timecourse across parameters and conditions ##
+## look at the activation timecourse across modules and conditions ##
 
 ## select relevant variables to plot ##
 
